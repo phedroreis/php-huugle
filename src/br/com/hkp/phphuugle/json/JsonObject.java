@@ -1,9 +1,19 @@
 package br.com.hkp.phphuugle.json;
 
 
+import br.com.hkp.phphuugle.mysql.MySQL;
 import java.io.IOException;
+import java.sql.SQLException;
 
 /******************************************************************************
+ * Super classe abstrata das classes relacionadas com os arquivos json que devem
+ * ser convertidos em tabelas do banco de dados ccraw.
+ * 
+ * create database ccraw
+ * default character set utf8mb4
+ * default collate utf8mb4_bin;
+ * 
+ * 
  * 
  * @since 10 de maio de 2021 v1.0
  * @version 1.0
@@ -20,6 +30,18 @@ public abstract class JsonObject {
     /*Um obj. para ler linha a linha o arquivo json*/
     private final TextLineReader textLineReader;
     
+    /*O banco de dados onde os dados serao inseridos*/
+    private final MySQL mysql;
+    
+    /*
+    Uma String com a porcao iniicial da instrucao INSERT INTO que serah 
+    executada por um objeto dessa classe Ex:"INSERT INTO sections (id, title)"
+    */
+    private final String insertIntoPrefix;
+    
+    /* Conta registros lidos e gravados*/
+    private int count = 0;
+    
     /*[00]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
@@ -28,26 +50,56 @@ public abstract class JsonObject {
      * seus registro em uma tabela de banco de dados.
      * 
      * @param path O nome e caminho do arquivo json.
+     * 
+     * @param mysql A conexao com o banco de dados. A conexao eh feita ao se 
+     * criar o objeto
+     * 
+     * @param tableNameAndColumnHeader Uma String com o nome da tabela e das 
+     * colunas
+     * 
      * @throws IOException Em caso de erro de IO.
      */
-    protected JsonObject(final String path) throws IOException {
+    protected JsonObject (
+            
+        final String path,
+        final MySQL mysql,
+        final String tableNameAndColumnHeader
+    )
+        throws IOException {
         
         //Um obj. para ler linha a linha o arquivo json
         textLineReader = new TextLineReader(path);
         
-        textLineReader.readLine(); //consome a 1a linha do arquivo
+        //Consome a 1a linha do arquivo. Esta linha e o caracetere '{'
+        textLineReader.readLine(); 
         
+        //O indice do campo que foi lido no registro
         fieldIndex = 0;
+        
+        this.mysql = mysql;
+        
+        //O prefixo de toda instrucao de insercao no banco de dados
+        insertIntoPrefix = 
+            "INSERT INTO " + tableNameAndColumnHeader + " VALUES ";
      
     }//construtor
     
     /*[01]----------------------------------------------------------------------
-    
+               Executa a instrucao de insercao de uma linha no BD
     --------------------------------------------------------------------------*/
-    /**
-     * 
-     */
-    protected abstract void insertInto();
+    protected void insertInto(final String values) throws SQLException {
+        
+        String update = insertIntoPrefix + values;
+        
+        System.out.printf (
+            "%6d - %s\n", ++count, update.replace(insertIntoPrefix, "")
+        );
+        
+        /*Se nenhuma insercao foi feita eh retornado 0*/
+        if (mysql.update(update) == 0) 
+            throw new SQLException("Falha ao atualizar tabela");
+        
+    }//insertInto()
     
     /*[02]----------------------------------------------------------------------
     
@@ -57,16 +109,20 @@ public abstract class JsonObject {
      * classe jsonObject.
      * 
      * @param field Um campo lido de um registro em um arquivo json
-     * @param index
+     * 
+     * @param fieldIndex
+     * 
+     * @throws SQLException Erro ao atualizar banco
      */
-    protected abstract void put(final String field, final int index);
+    protected abstract void put(final String field, final int fieldIndex)
+        throws SQLException;
     
        
     /*[03]----------------------------------------------------------------------
-    * Recebe uma linha lida de um arquivo json e retorna o valor do campo ou 
-    * null no caso de chave de fechamento (indicando que o registro foi lido)
+     Recebe uma linha lida de um arquivo json e retorna o valor do campo ou 
+     null no caso de chave de fechamento (indicando que o registro foi lido)
     --------------------------------------------------------------------------*/
-     private String retrieveField(final String jsonLine) {
+    private String retrieveField(final String jsonLine) {
         
         if (jsonLine.trim().charAt(0) == '}') return null;
   
@@ -84,13 +140,11 @@ public abstract class JsonObject {
     /*[04]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
-    public final void fillDatabaseTable() throws IOException {
+    public final void fillDatabaseTable() throws IOException, SQLException {
         
         while(true) {
             
-            /*
-            Consome a chave de abertura de um registro json. 
-            */            
+            /*Consome a chave de abertura de um registro json. */            
             String field = textLineReader.readLine();
            
             /*
@@ -98,14 +152,14 @@ public abstract class JsonObject {
             alcancado o fim do arquivo.
             */
             if (field.trim().charAt(0) == '}') {
-                //Le mais uma linha para fechar o arquivo
+                
+                //Le mais uma linha para forcar fechamento o arquivo
                 textLineReader.readLine();
                 break;
+                
             }//if
             
-            /*
-            Le cada campo do registro json e o atribui a um campo do objeto.
-            */
+            /*Le cada campo do registro json e o atribui a um campo do objeto*/
             do {
 
                 field = retrieveField(textLineReader.readLine());
@@ -115,12 +169,17 @@ public abstract class JsonObject {
                 um campo json do registro e que deve ser atribuido a um campo
                 do objeto.
                 */
-                if (field != null) put(field, ++fieldIndex);
+                if (field != null) {
+                    
+                    //escapa aspas simples na String
+                    field = field.replace("'", "''"); 
+                    
+                    put(field, ++fieldIndex);
+                }
 
             } while (field != null);
             
             fieldIndex = 0;
-            
                        
         }//while
         
