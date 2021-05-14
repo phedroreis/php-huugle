@@ -6,34 +6,46 @@ import java.sql.SQLException;
 
 /******************************************************************************
  * 
- * Classe relacionada a tabela sections do banco cc e ao arquivo sections.json.
- * Um objeto desta classe armazena os dados de uma secao do forum CC.
+ * Classe relacionada a tabela subsections do banco cc e ao arquivo
+ * subsections.json. Um objeto desta classe armazena todos os dados de uma 
+ * subsecao do forum CC. (uma subsecao contem uma lista de topicos)
  * 
- * Estrutura da tabela sections :
+ * Estrutura da tabela subsections :
  * 
-    CREATE TABLE `sections` (
+    CREATE TABLE `subsections` (
       `id` tinyint unsigned NOT NULL,
-      `title` varchar(11) COLLATE utf8mb4_bin DEFAULT NULL,
-       PRIMARY KEY (`id`)
+      `title` varchar(46) COLLATE utf8mb4_bin NOT NULL,
+      `sectionid` tinyint unsigned NOT NULL,
+      `topiccount` smallint unsigned NOT NULL,
+      PRIMARY KEY (`id`),
+      KEY `sectionid` (`sectionid`),
+      CONSTRAINT `subsections_ibfk_1` FOREIGN KEY (`sectionid`) 
+      REFERENCES `sections` (`id`)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
  * 
- * @since 10 de maio de 2021 v1.0
+ * @since 13 de maio de 2021 v1.0
  * @version 1.0
  * @author "Pedro Reis"
  ******************************************************************************/
-public class JsonSection extends JsonObject {
+public class JsonSubSection extends JsonObject {
     
-    //Chave prim. Existiam 3 secoes : #c3, #c4, #c5
+    //Chave prim. 
     private String id;
     
-    //O titulo da secao. Pode ser Informacoes, Discussoes ou Diversao
+    //O titulo da board
     private String title;
+    
+    //chave estrangeira para a tabela sections
+    private String sectionid;
+    
+    //Num. de topicos em uma board
+    private String topiccount;
     
     /*[00]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
-    /**
-     * Cria um objeto para acessar a tabela sections
+     /**
+     * Cria um objeto para acessar a tabela subsections
      * 
      * @param pathName O nome do arquivo json a ser lido com os dados para a 
      * tabela
@@ -42,13 +54,13 @@ public class JsonSection extends JsonObject {
      * 
      * @throws IOException Em caso de erro de IO
      */
-    public JsonSection (
+    public JsonSubSection (
         final String pathName,
         final MySQL mysql
     ) 
     throws IOException {
         
-        super(pathName, mysql, "sections");
+        super(pathName, mysql, "subsections");
         
     }//construtor
     
@@ -60,7 +72,9 @@ public class JsonSection extends JsonObject {
         
         insertInto (
             "(" + id +
-            SEP + title +  ");"
+            SEP + title + 
+            SEP + sectionid + 
+            SEP + topiccount + ");"
         );
         
     }//inputInto()
@@ -81,10 +95,16 @@ public class JsonSection extends JsonObject {
                 
         switch (index) {
             case 1:
-                id = betweenQuotes(field.replace("#c", ""));
+                id = betweenQuotes(field.replace("board=", ""));
                 break;
             case 2:
                 title = betweenQuotes(field);
+                break;
+            case 3:
+                sectionid = betweenQuotes(field.replace("#c", ""));
+                break;
+            case 4:
+                topiccount = betweenQuotes(field);
                 insertInto();
         }//switch
         
@@ -103,14 +123,14 @@ public class JsonSection extends JsonObject {
      * @throws SQLException Erro ao atualizar o banco
      */
     public static void main(String[] args) throws IOException, SQLException {
-        JsonSection j = 
-                new JsonSection (
-                    "json/sections.json", 
+        JsonSubSection s = 
+                new JsonSubSection (
+                    "json/subsections.json", 
                     new MySQL("localhost", "root", "eratostenes", "cc")
                 );
         
-        j.fillDatabaseTable();
+        s.fillDatabaseTable();
         
     }//main()
     
-}//classe JsonSection
+}//classe JsonSubSection

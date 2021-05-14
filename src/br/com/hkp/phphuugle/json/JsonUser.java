@@ -5,28 +5,27 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 /******************************************************************************
- * Classe relacionada a tabela users do banco ccraw e ao arquivo users.json.
+ * Classe relacionada a tabela users do banco cc e ao arquivo users.json.
  * Um objeto desta classe armazena todos os dados de um usuario do forum CC.
  * 
  * Estrutura da tabela users:
  * 
- * create table users
- *(
- *  id varchar(26),
- *  nick varchar(34),
- *  lev varchar(14),
- *  membergroup varchar(22),
- *  postcount varchar(6),
- *  gender varchar(9),
- *  avatar varchar(47),
- *  blurb text,
- *  signature text,
- *  signatureText text,
- *  sites text,
- *  descriptions text,
- *  profil text,
- *  primary key(id)
- *);
+    CREATE TABLE `users` (
+      `id` varchar(26) COLLATE utf8mb4_bin NOT NULL,
+      `nick` varchar(34) COLLATE utf8mb4_bin NOT NULL,
+      `lev` varchar(14) COLLATE utf8mb4_bin DEFAULT NULL,
+      `membergroup` varchar(22) COLLATE utf8mb4_bin DEFAULT NULL,
+      `postcount` smallint unsigned DEFAULT NULL,
+      `gender` enum('M', 'F') DEFAULT NULL,
+      `avatar` varchar(47) COLLATE utf8mb4_bin DEFAULT NULL,
+      `blurb` text COLLATE utf8mb4_bin DEFAULT NULL,
+      `signature` text COLLATE utf8mb4_bin DEFAULT NULL,
+      `signatureText` text COLLATE utf8mb4_bin DEFAULT NULL,
+      `sites` text COLLATE utf8mb4_bin DEFAULT NULL,
+      `descriptions` text COLLATE utf8mb4_bin DEFAULT NULL,
+      `profil` text COLLATE utf8mb4_bin DEFAULT NULL,
+       PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
  * 
  * @since 10 de maio de 2021 v1.0
  * @version 1.0
@@ -40,54 +39,60 @@ public class JsonUser extends JsonObject {
     //max. 34 caract.
     private String nick;
     
-    //O nivel do usuario. max 14 carac.
+    //O nivel do usuario. max 14 carac. ou null
     private String lev;
     
-    //O grupo max. 22 carac.
+    //O grupo max. 22 carac. ou null
     private String membergroup;
     
-    //Num. de posts. max. 6 carac.
+    //Num. de posts. smallint unsigned ou null
     private String postcount;
     
-    //Genero N/A, Masculino ou Feminino
+    //Genero null , M ou F
     private String gender;
     
-    //Arquivo de avatar max. 47 carac.
+    //Arquivo de avatar max. 47 carac. ou null
     private String avatar;
     
-    //String sem limitacao
+    //text ou null
     private String blurb;
     
-    //String sem limitacao
+    //text ou null
     private String signature;
     
-    //Assinatura sem tags HTML - String sem limitacao
+    //Assinatura sem tags HTML - text ou null
     private String signatureText;
     
-    //String sem limitacao
+    //text ou null
     private String sites;
     
-    //String sem limitacao
+    //text ou null
     private String descriptions;
     
-    //Perfil do usuario - String sem limitacao
+    //text ou null
     private String profil;
     
     /*[00]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
+     /**
+     * Cria um objeto para acessar a tabela users
+     * 
+     * @param pathName O nome do arquivo json a ser lido com os dados para a 
+     * tabela
+     * 
+     * @param mysql Um objeto de conexao com o banco de dados
+     * 
+     * @throws IOException Em caso de erro de IO
+     */
     public JsonUser (
         final String pathName,
         final MySQL mysql
     ) 
     throws IOException {
         
-        super (
-            pathName, 
-            mysql, 
-            "users (id, nick, lev, membergroup, postcount, gender, avatar, " +
-            "blurb, signature, signatureText, sites, descriptions, profil)"
-        );
+        super (pathName, mysql, "users");
+        
     }//construtor
     
     /*[01]----------------------------------------------------------------------
@@ -98,19 +103,20 @@ public class JsonUser extends JsonObject {
         
         insertInto ( 
                 
-            "('" + id + 
-            "', '" + nick +
-            "', '" + lev +
-            "', '" + membergroup +
-            "', '" + postcount +
-            "', '" + gender +
-            "', '" + avatar +
-            "', '" + blurb +
-            "', '" + signature +
-            "', '" + signatureText +
-            "', '" + sites +
-            "', '" + descriptions +
-            "', '" + profil + "');" 
+            "(" + id + 
+            SEP + nick + 
+            SEP + lev + 
+            SEP + membergroup + 
+            SEP + postcount + 
+            SEP + gender + 
+            SEP + avatar + 
+            SEP + blurb +
+            SEP + signature +
+            SEP + signatureText +
+            SEP + sites +
+            SEP + descriptions +
+            SEP + profil + ");" 
+            
         );
         
     }//inputInto()
@@ -127,48 +133,51 @@ public class JsonUser extends JsonObject {
     --------------------------------------------------------------------------*/
     @Override
     protected void put(final String field, final int index) 
-        throws SQLException {
+    throws SQLException {
                 
         switch (index) {
             
             case 1:
-                id = field;
+                id = betweenQuotes(field);
                 break;
             case 2:
-                nick = field;
+                nick = betweenQuotes(field);
                 break;
             case 3:
-                lev = field;
+                lev = betweenQuotes(field);
                 break;
             case 4:
-                membergroup = field;
+                membergroup = betweenQuotes(field);
                 break;
             case 5:
-                postcount = field;
+                postcount = betweenQuotes(field);
                 break;
             case 6:
-                gender = field;
+                if (field.equals(NA))
+                    gender = betweenQuotes(field);
+                else
+                    gender = betweenQuotes("" + field.charAt(0));
                 break;
             case 7:
-                avatar = field;
+                avatar = betweenQuotes(field);
                 break;
             case 8:
-                blurb = field;
+                blurb = betweenQuotes(field);
                 break;
             case 9:
-                signature = field;
+                signature = betweenQuotes(field);
                 break;
             case 10:
-                signatureText = field;
+                signatureText = betweenQuotes(field);
                 break;
             case 11:
-                sites = field;
+                sites = betweenQuotes(field);
                 break;
             case 12:
-                descriptions = field;
+                descriptions = betweenQuotes(field);
                 break;
             case 13:
-                profil = field;
+                profil = betweenQuotes(field);
                 insertInto();//Grava todos os atributos no banco de dados
        
         }//switch
@@ -192,8 +201,8 @@ public class JsonUser extends JsonObject {
     public static void main(String[] args) throws IOException, SQLException {
         JsonUser u = 
                 new JsonUser (
-                    "users.json", 
-                    new MySQL("localhost", "root", "eratostenes", "ccraw")
+                    "json/users.json", 
+                    new MySQL("localhost", "root", "eratostenes", "cc")
                 );
         
         u.fillDatabaseTable();

@@ -6,49 +6,39 @@ import java.sql.SQLException;
 
 /******************************************************************************
  * 
- * Classe relacionada a tabela sections do banco cc e ao arquivo sections.json.
- * Um objeto desta classe armazena os dados de uma secao do forum CC.
+ * Classe relacionada a tabela postid_file do banco cc e ao arquivo 
+ * postid_file.json.  Um objeto desta classe relaciona cada post do forum com
+ * o arquivo HTML onde se encontra.
  * 
- * Estrutura da tabela sections :
+ * A estrutura da tabela postid_file:
  * 
-    CREATE TABLE `sections` (
-      `id` tinyint unsigned NOT NULL,
-      `title` varchar(11) COLLATE utf8mb4_bin DEFAULT NULL,
-       PRIMARY KEY (`id`)
+    CREATE TABLE `postid_file` (
+      `postid` INT UNIQUE NOT NULL,
+      `file` varchar(22) COLLATE utf8mb4_bin NOT NULL
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
  * 
- * @since 10 de maio de 2021 v1.0
+ * @since 13 de maio de 2021 v1.0
  * @version 1.0
  * @author "Pedro Reis"
  ******************************************************************************/
-public class JsonSection extends JsonObject {
+public class JsonPostidFile extends JsonObject {
     
-    //Chave prim. Existiam 3 secoes : #c3, #c4, #c5
-    private String id;
+    //Chave estrangeira
+    private String postid;
     
-    //O titulo da secao. Pode ser Informacoes, Discussoes ou Diversao
-    private String title;
+    //O aqruivo onde se encontra o post
+    private String file;
     
     /*[00]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
-    /**
-     * Cria um objeto para acessar a tabela sections
-     * 
-     * @param pathName O nome do arquivo json a ser lido com os dados para a 
-     * tabela
-     * 
-     * @param mysql Um objeto de conexao com o banco de dados
-     * 
-     * @throws IOException Em caso de erro de IO
-     */
-    public JsonSection (
-        final String pathName,
+    public JsonPostidFile (
+        final String path,
         final MySQL mysql
     ) 
     throws IOException {
         
-        super(pathName, mysql, "sections");
+        super(path, mysql, "postid_file");
         
     }//construtor
     
@@ -59,8 +49,8 @@ public class JsonSection extends JsonObject {
     private void insertInto() throws SQLException {
         
         insertInto (
-            "(" + id +
-            SEP + title +  ");"
+            "(" + postid +
+            SEP + file +  ");"
         );
         
     }//inputInto()
@@ -81,10 +71,10 @@ public class JsonSection extends JsonObject {
                 
         switch (index) {
             case 1:
-                id = betweenQuotes(field.replace("#c", ""));
+                postid = betweenQuotes(field.replace("msg", ""));
                 break;
             case 2:
-                title = betweenQuotes(field);
+                file = betweenQuotes(field);
                 insertInto();
         }//switch
         
@@ -103,14 +93,14 @@ public class JsonSection extends JsonObject {
      * @throws SQLException Erro ao atualizar o banco
      */
     public static void main(String[] args) throws IOException, SQLException {
-        JsonSection j = 
-                new JsonSection (
-                    "json/sections.json", 
+        JsonPostidFile p = 
+                new JsonPostidFile (
+                    "json/postid_file.json", 
                     new MySQL("localhost", "root", "eratostenes", "cc")
                 );
         
-        j.fillDatabaseTable();
+        p.fillDatabaseTable();
         
     }//main()
     
-}//classe JsonSection
+}//classe JsonPostidFile

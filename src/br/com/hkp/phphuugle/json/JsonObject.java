@@ -4,14 +4,17 @@ package br.com.hkp.phphuugle.json;
 import br.com.hkp.phphuugle.mysql.MySQL;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /******************************************************************************
  * Super classe abstrata das classes relacionadas com os arquivos json que devem
  * ser convertidos em tabelas do banco de dados ccraw.
  * 
- * create database ccraw
- * default character set utf8mb4
- * default collate utf8mb4_bin;
+    CREATE DATABASE `cc` 
+    DEFAULT CHARACTER SET utf8mb4 
+    COLLATE utf8mb4_bin 
+    DEFAULT ENCRYPTION='N';
  * 
  * 
  * 
@@ -20,6 +23,17 @@ import java.sql.SQLException;
  * @author "Pedro Reis"
  ******************************************************************************/
 public abstract class JsonObject {
+    
+       
+    /**
+     * String para campo nao atribuido no arquivo json
+     */
+    protected static final String NA = "N/A";
+    
+    /**
+     * String que separa os dados em uma instrucao INSERT INTO
+     */
+    protected static final String SEP = ", ";
     
     /*A subclasse usarah esta variavel para contar quantos campos jah foram 
     lidos em um registro. Quando todos os campos forem lidos devera ser setada 
@@ -49,28 +63,27 @@ public abstract class JsonObject {
      * Recebe o caminho e nome de um arquivo json e cria um ojbeto para gravar
      * seus registro em uma tabela de banco de dados.
      * 
-     * @param path O nome e caminho do arquivo json.
+     * @param pathName O nome e caminho do arquivo json.
      * 
      * @param mysql A conexao com o banco de dados. A conexao eh feita ao se 
      * criar o objeto
      * 
-     * @param tableNameAndColumnHeader Uma String com o nome da tabela e das 
-     * colunas
+     * @param tableName O nome da tabela
      * 
      * @throws IOException Em caso de erro de IO.
      */
     protected JsonObject (
             
-        final String path,
+        final String pathName,
         final MySQL mysql,
-        final String tableNameAndColumnHeader
+        final String tableName
     )
-        throws IOException {
+    throws IOException {
         
         //Um obj. para ler linha a linha o arquivo json
-        textLineReader = new TextLineReader(path);
+        textLineReader = new TextLineReader(pathName);
         
-        //Consome a 1a linha do arquivo. Esta linha e o caracetere '{'
+        //Consome a 1a linha do arquivo. Esta linha e o caractere '{'
         textLineReader.readLine(); 
         
         //O indice do campo que foi lido no registro
@@ -80,7 +93,7 @@ public abstract class JsonObject {
         
         //O prefixo de toda instrucao de insercao no banco de dados
         insertIntoPrefix = 
-            "INSERT INTO " + tableNameAndColumnHeader + " VALUES ";
+            "INSERT INTO " + tableName + " VALUES ";
      
     }//construtor
     
@@ -91,13 +104,10 @@ public abstract class JsonObject {
         
         String update = insertIntoPrefix + values;
         
-        System.out.printf (
-            "%6d - %s\n", ++count, update.replace(insertIntoPrefix, "")
-        );
+        System.out.printf ("%6d - %s\n", ++count, update);
         
         /*Se nenhuma insercao foi feita eh retornado 0*/
-        if (mysql.update(update) == 0) 
-            throw new SQLException("Falha ao atualizar tabela");
+        if (mysql.update(update) == 0) throw new SQLException("No update");
         
     }//insertInto()
     
@@ -136,8 +146,101 @@ public abstract class JsonObject {
 
     }//retrieveField()
     
-    
     /*[04]----------------------------------------------------------------------
+    
+    --------------------------------------------------------------------------*/
+    /**
+     * Formata uma String entre aspas simples se o dado for diferente de null.
+     * 
+     * @param value A String
+     * 
+     * @return A String formatada entre aspas simples ou a String NULL
+     */
+    protected String betweenQuotes(final String value) {
+        
+        if (value.equals(NA)) 
+            return "NULL";
+        else
+            return "'" + value + "'";
+        
+    }//format()
+    
+    /*[05]----------------------------------------------------------------------
+    
+    --------------------------------------------------------------------------*/
+    private static final Pattern TIMESTAMP =  Pattern.compile (
+        "(\\d{2}) de " + "([a-zJFMAJSOND\u00e7]+)" +
+        " de (\\d{4}), (\\d{2}:\\d{2}:\\d{2})"    
+    );
+    
+    /**
+     * Obtem o timestamp de uma data por extenso.
+     * 
+     * @param datetime A String
+     * 
+     * @return O timestamp da data
+     * 
+     * @throws SQLException Se a data nao puder ser convertida para timestamp
+     */
+    protected String getTimestamp(final String datetime) throws SQLException {
+        
+        Matcher m = TIMESTAMP.matcher(datetime);
+                  
+        if (m.find()) { 
+                
+            String month = null;
+            
+            switch (m.group(2)) {
+                
+                case "Janeiro": 
+                    month = "01";
+                    break;
+                case "Fevereiro": 
+                    month = "02";
+                    break;     
+                case "Mar\u00e7o": 
+                    month = "03";
+                    break;   
+                 case "Abril": 
+                    month = "04";
+                    break;
+                case "Maio": 
+                    month = "05";
+                    break;     
+                case "Junho": 
+                    month = "06";
+                    break;   
+                case "Julho": 
+                    month = "07";
+                    break;
+                case "Agosto": 
+                    month = "08";
+                    break;     
+                case "Setembro": 
+                    month = "09";
+                    break;   
+                case "Outubro": 
+                    month = "10";
+                    break;
+                case "Novembro": 
+                    month = "11";
+                    break;     
+                case "Dezembro": 
+                    month = "12";
+               
+            }//switch
+            
+            return 
+                m.group(3) + "-" + month + "-" + m.group(1) + " " + m.group(4);
+      
+        }//if
+        
+        throw new SQLException("Fail getting timestamp " + datetime);
+        
+    }//GetTimestamp()
+        
+     
+    /*[06]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
     public final void fillDatabaseTable() throws IOException, SQLException {
@@ -167,22 +270,28 @@ public abstract class JsonObject {
                 /*
                 Se foi lido algo diferente de uma chave de fechamento entao eh
                 um campo json do registro e que deve ser atribuido a um campo
-                do objeto.
+                do objeto. Se foi encontrada uma chave de fechamento foi
+                retornado valor null em field
                 */
                 if (field != null) {
                     
-                    //escapa aspas simples na String
-                    field = field.replace("'", "''"); 
+                   //escapa aspas simples na String
+                   field = field.replace("'", "''"); 
                     
                     put(field, ++fieldIndex);
                 }
 
             } while (field != null);
             
+            /*
+            Todos os campos do registro foram lidos. Zera contador para iniciar
+            leitura do proximo registro na proxima iteracao do loop while
+            */
             fieldIndex = 0;
                        
         }//while
         
     }//fillDatabaseTable()
- 
+    
+    
 }//classe JsonObject
