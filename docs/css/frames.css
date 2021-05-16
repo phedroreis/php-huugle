@@ -1,0 +1,163 @@
+@charset "UTF-8";
+
+@import "colors.css";
+
+/*--------------------------------------------------------------------------
+                     Fonte utilizada nos paragrafos
+---------------------------------------------------------------------------*/
+@font-face
+{
+    font-family: 'robot';
+    src: url("../fonts/RobotoSlab-VariableFont_wght.ttf");
+}
+
+
+/*--------------------------------------------------------------------------
+                   Estiliza a tag section de cada frame
+ --------------------------------------------------------------------------*/     
+.frame-section
+{
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+
+.frame-section h1 /*Para titulo do frame*/
+{
+    font-size: 2em;
+    color: var(--h1-color);
+}
+
+.frame-section h2 /*Para nomes de pacotes*/
+{
+    font-size: 1.6em;
+    background-color: var(--h2-background);
+    color: var(--h2-color);
+    text-align: center;
+    clear: both;
+}
+
+.frame-section h3 /*Para identificadores de classes*/
+{
+    font-size: 1.2em;
+    color: var(--h3-color);
+    clear: both;
+}
+
+.frame-section h3::before /* Insere um diamond antes do nome da classe */
+{
+  content: "\25C6   ";
+  color: var(--h3-color);
+}
+
+.frame-section h4 /*Para identificadores de metodos*/
+{
+    font-size: 1em;
+    color: var(--h4-color);
+}
+
+.frame-section h5 /*Para identificadores de campos*/
+{
+  font-size: 1em;
+  color: var(--h5-color);
+}
+
+.frame-section p /* Estiliza os paragrafos */
+{
+    line-height: 1.5em;
+    text-align: justify;
+    font-family: robot;
+    font-size: 1em;
+    padding-bottom: 0.6em;
+
+}
+
+.frame-section span.filename /*Para nomes de arquivos*/
+{
+    font-family: 'Courier New', Courier, monospace;
+    font-style: italic;
+}
+
+
+.frame-section span.java-method /*Para nomes de metodos*/
+{
+    color: var(--javacode-method-color);
+}
+
+
+.frame-section a, a:visited, a:active /*Links*/
+{
+    text-decoration: none;
+    color: var(--link-color);
+ 
+}
+
+.frame-section ul /* Listas nao ordenadas */
+{
+    margin-left: 3em;
+}
+
+.frame-section li
+{
+    padding: 0.5em;
+    text-align: justify;
+}
+
+.frame-section code.htmlcode /*Para codigo HTML*/
+{
+  font-size: 1.2em;
+}
+
+.frame-section iframe.code
+{
+  background-color: var(--iframe-javacode-background);
+  float: left;
+  width: 700px;
+  height: 700px;
+  padding: 0;
+  margin: 0px 5px 15px 0px;
+}
+
+/*-------------------------------------------------------------------------
+            Estiliza botoes Anterior e Proximo no fim da pagina
+-------------------------------------------------------------------------*/               
+a.nav-button, a.nav-button:visited 
+{
+    display: block;
+    background-color: var(--nav-background);
+    color: var(--nav-color);
+    padding: 15px 32px;
+    margin-right: 10px;
+    margin-top: 20px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.nav-button-prev
+{
+    float: left;
+}
+
+.nav-button-next
+{
+    float: right;
+}
+
+/*---------------------------------------------------------------------------
+                     Estiliza o rodape da pagina
+ --------------------------------------------------------------------------*/                     
+footer
+{
+  clear: both;
+}
+
+/*--------------------------------------------------------------------------*/
+
+
+
+
+
+
+
+

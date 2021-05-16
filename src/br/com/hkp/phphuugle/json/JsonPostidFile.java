@@ -99,7 +99,7 @@ public class JsonPostidFile extends JsonObject {
                     new MySQL("localhost", "root", "eratostenes", "cc")
                 );
         
-        p.fillDatabaseTable();
+        p.fillDatabaseTable(1);
         
     }//main()
     

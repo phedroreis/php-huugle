@@ -1,6 +1,7 @@
 package br.com.hkp.phphuugle.json;
 
 import br.com.hkp.phphuugle.mysql.MySQL;
+import static br.com.hkp.phphuugle.mysql.Util.toTimestamp;
 import java.io.IOException;
 import java.sql.SQLException;
 
@@ -140,8 +141,7 @@ public class JsonTopic extends JsonObject {
             case 3:
                 authorid = betweenQuotes(field);
                 break;
-            case 4://foi lido o campo sectionid
-                break;
+            //case 4:consome o campo "sectionid" do registro json
             case 5:
                 subsectionid = betweenQuotes(field.replace("board=", ""));
                 break;                
@@ -149,7 +149,7 @@ public class JsonTopic extends JsonObject {
                 postid = betweenQuotes(field.replace("msg", ""));
                 break;
             case 7:
-                creationdate = betweenQuotes(getTimestamp(field));
+                creationdate = betweenQuotes(toTimestamp(field));
                 break;
             case 8:
                 views = betweenQuotes(field);
@@ -180,15 +180,14 @@ public class JsonTopic extends JsonObject {
      * @throws SQLException Erro ao atualizar o banco
      */
     public static void main(String[] args) throws IOException, SQLException {
-        
-  
+ 
         JsonTopic t = 
                 new JsonTopic (
                     "json/topics.json", 
                     new MySQL("localhost", "root", "eratostenes", "cc")
                 );
         
-        t.fillDatabaseTable();
+        t.fillDatabaseTable(1);
         
     }//main()
     

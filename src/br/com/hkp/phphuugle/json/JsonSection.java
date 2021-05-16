@@ -109,7 +109,7 @@ public class JsonSection extends JsonObject {
                     new MySQL("localhost", "root", "eratostenes", "cc")
                 );
         
-        j.fillDatabaseTable();
+        j.fillDatabaseTable(1);
         
     }//main()
     

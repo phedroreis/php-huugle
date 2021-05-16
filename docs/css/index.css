@@ -1,0 +1,272 @@
+@charset "UTF-8";
+
+@import "colors.css";
+
+/*-------------------------------------------------------------------------
+                           Configuracoes globais
+-------------------------------------------------------------------------*/
+*
+{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body
+{
+    background-color: var(--default-background);
+}
+
+/*-------------------------------------------------------------------------
+                   Configura o banner com o menu de navegacao
+-------------------------------------------------------------------------*/
+nav#nav-bar
+{
+    height: 8vh;
+    background-color: var(--nav-background);
+}
+
+
+/*-------------------------------------------------------------------------
+                      Configura o label do checkbox
+-------------------------------------------------------------------------*/
+label
+{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 60px;
+    height: 8vh;
+    padding: 1.5vh 10px;
+}
+
+/*-------------------------------------------------------------------------
+                  Configura o menu do banner de navegacao
+-------------------------------------------------------------------------*/
+ul#menu 
+{
+    list-style: none;
+    margin-left: 70px;
+}
+
+ul#menu li
+{
+    float: left;
+    height: 8vh;
+    padding: 3vh 10px;
+}
+
+
+ul#menu li:hover
+{
+    background-color: var(--nav-hover-color);
+}
+
+
+ul#menu li a
+{
+    text-decoration: none;
+    color: var(--nav-color);
+}
+
+ul#menu div
+{
+    display: none;
+    position:absolute;
+    right: 5%;
+    width: 45%;
+    height: 8vh;
+    padding: 3vh 0px;
+    overflow: hidden;
+    color: var(--nav-color);
+    
+}
+
+ul#menu li:hover + div
+{
+    display: block;
+}
+
+/*-------------------------------------------------------------------------
+           Configura o sidebar que exibe o indice da documentacao
+-------------------------------------------------------------------------*/
+nav#sidebar
+{
+    display: none;
+    float: left;
+    overflow: auto;
+    height: 88vh;
+    border-top: solid 1px var(--nav-border-color);
+    border-bottom: solid 1px var(--nav-border-color);
+    background-color: var(--nav-background);
+}
+
+
+nav#sidebar ul
+{
+    list-style-position: inside;
+    list-style-type: none;
+}
+
+nav#sidebar a
+{
+    text-decoration: none;
+    color: var(--nav-color);
+    transition: padding-left 0.4s;
+}
+
+nav#sidebar a:hover
+{
+    color: var(--nav-hover-color);
+    font-weight: bolder;
+    padding-left: 10px;
+}
+
+/*-------------------------------------------------------------------------
+                  Configura o indice da documentacao
+-------------------------------------------------------------------------*/
+ul#indice-level1 li
+{
+    margin: 10px 10px;
+}
+
+ul#indice-level2 li
+{
+    margin: 10px 25px;
+}
+
+ul#indice-level3 li
+{
+    margin: 10px 40px;
+}
+
+ul#indice-level4 li
+{
+    margin: 10px 55px;
+}
+
+ul#indice-level5 li
+{
+    margin: 10px 70px;
+}
+
+ul#indice-level6 li
+{
+    margin: 10px 85px;
+}
+
+
+/*-------------------------------------------------------------------------
+                       Configuracao para o checkbox
+-------------------------------------------------------------------------*/
+input[type="checkbox"]
+{
+    display: none;
+}
+
+input[type="checkbox"]:checked ~ nav#sidebar
+{
+    display: block;
+    width: 25%;
+}
+
+input[type="checkbox"]:checked ~ iframe
+{
+    width: 75%;
+}
+
+input[type="checkbox"]:checked ~ label
+{
+    background-color: var(--nav-sidebar-button-background);
+}
+
+
+/*-------------------------------------------------------------------------
+      Configura o frame onde serao exibidas as paginas da documentacao
+-------------------------------------------------------------------------*/
+iframe
+{
+    float: right;
+    width: 100%;
+    height: 88vh;
+    padding: 10px;
+}
+
+/*-------------------------------------------------------------------------
+                     Configura o rodape da pagina
+-------------------------------------------------------------------------*/
+footer
+{
+    clear: both;
+    text-align: center;
+    padding: 1vh;
+    height: 4vh;
+    background-color: var(--footer-background);
+    color: var(--footer-color);
+}
+
+/******************************************************************************************
+         Configuracao alternativa para visualizacao em smartphones e tablets
+*******************************************************************************************/
+
+@media screen and (max-height: 700px)
+{
+
+
+    nav#nav-bar
+    {
+        width: 15%;
+        height: 100vh;
+        float: left;
+    }
+
+    label
+    {
+        height: 60px;
+        padding: 10px;
+    }
+    
+    ul#menu 
+    {
+        margin-left: 0;
+        margin-top: 70px;
+    }
+
+    ul#menu li
+    {
+        float: none;
+        width: 100%;
+        height: 40px;
+        padding: 10px 5px;
+    }
+
+    nav#sidebar
+    {
+        height: 100vh;
+        border-top: none;
+        border-left: solid 1px var(--nav-border-color);
+    }
+
+    iframe
+    {
+        float: left;
+        width: 85%;
+        height: 100vh;
+        padding: 10px;
+        border-top: none;
+    }
+
+    input[type="checkbox"]:checked ~ iframe
+    {
+        width: 60%;
+    }
+    
+    footer
+    {
+        display: none;
+    }
+}
+
+
+

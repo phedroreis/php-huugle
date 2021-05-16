@@ -1,51 +1,66 @@
 package br.com.hkp.phphuugle.json;
 
 import br.com.hkp.phphuugle.mysql.MySQL;
+import static br.com.hkp.phphuugle.mysql.Util.toTimestamp;
 import java.io.IOException;
 import java.sql.SQLException;
 
 /******************************************************************************
  * 
- * Classe relacionada a tabela subsections do banco cc e ao arquivo
- * subsections.json. Um objeto desta classe armazena todos os dados de uma 
- * subsecao do forum CC. (uma subsecao contem uma lista de topicos)
+ * Classe relacionada a tabela posts do banco cc e ao arquivo posts.json.
+ * Um objeto desta classe armazena os dados de um post do forum CC.
  * 
- * Estrutura da tabela subsections :
+ * Estrutura da tabela posts :
  * 
-    CREATE TABLE `subsections` (
-      `id` tinyint unsigned NOT NULL,
-      `title` varchar(46) COLLATE utf8mb4_bin NOT NULL,
-      `sectionid` tinyint unsigned NOT NULL,
-      `topiccount` smallint unsigned NOT NULL,
-      PRIMARY KEY (`id`),
-      KEY `sectionid` (`sectionid`),
-      CONSTRAINT `subsections_ibfk_1` FOREIGN KEY (`sectionid`) 
-      REFERENCES `sections` (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+ 
+CREATE TABLE `posts` (
+  `id` int NOT NULL,
+  `topicid` smallint unsigned NOT NULL,
+  `authorid` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `creationdate` timestamp NOT NULL,
+  `modified` varchar(80) COLLATE utf8mb4_bin DEFAULT NULL,
+  `post` mediumtext COLLATE utf8mb4_bin NOT NULL,
+  `ord` int NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `topicid` (`topicid`),
+  KEY `authorid` (`authorid`),
+  CONSTRAINT `posts_ibfk_1` FOREIGN KEY (`topicid`) REFERENCES `topics` (`id`),
+  CONSTRAINT `posts_ibfk_2` FOREIGN KEY (`authorid`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
  * 
- * @since 13 de maio de 2021 v1.0
+ * @since 15 de maio de 2021 v1.0
  * @version 1.0
  * @author "Pedro Reis"
  ******************************************************************************/
-public class JsonSubSection extends JsonObject {
+public class JsonPost extends JsonObject {
     
     //Chave prim. 
     private String id;
     
-    //O titulo da board
-    private String title;
+    //Chave estr. para topics
+    private String topicid;
     
-    //chave estrangeira para a tabela sections
-    private String sectionid;
+    //Chave estr. para users
+    private String authorid;
     
-    //Num. de topicos em uma board
-    private String topiccount;
+    //Data de criacao do post
+    private String creationdate;
+    
+    //Data e autor da modificacao do post. Se houver
+    private String modified;
+    
+    //O post
+    private String post;
+    
+    //Se foi o enesimo post a ser publicado, ord = n
+    private String ord;
     
     /*[00]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
-     /**
-     * Cria um objeto para acessar a tabela subsections
+    /**
+     * Cria um objeto para acessar a tabela sections
      * 
      * @param pathName O nome do arquivo json a ser lido com os dados para a 
      * tabela
@@ -54,13 +69,13 @@ public class JsonSubSection extends JsonObject {
      * 
      * @throws IOException Em caso de erro de IO
      */
-    public JsonSubSection (
+    public JsonPost (
         final String pathName,
         final MySQL mysql
     ) 
     throws IOException {
         
-        super(pathName, mysql, "subsections");
+        super(pathName, mysql, "posts");
         
     }//construtor
     
@@ -71,10 +86,14 @@ public class JsonSubSection extends JsonObject {
     private void insertInto() throws SQLException {
         
         insertInto (
-            "(" + id +
-            SEP + title + 
-            SEP + sectionid + 
-            SEP + topiccount + ");"
+            
+            "(" + id + 
+            SEP + topicid +
+            SEP + authorid +
+            SEP + creationdate +
+            SEP + modified +
+            SEP + post +
+            SEP + ord + ");"
         );
         
     }//inputInto()
@@ -95,16 +114,26 @@ public class JsonSubSection extends JsonObject {
                 
         switch (index) {
             case 1:
-                id = betweenQuotes(field.replace("board=", ""));
+                id = betweenQuotes(field.replace("msg", ""));
                 break;
             case 2:
-                title = betweenQuotes(field);
+                topicid = betweenQuotes(field.replace("topic=", ""));
                 break;
             case 3:
-                sectionid = betweenQuotes(field.replace("#c", ""));
+                authorid = betweenQuotes(field);
                 break;
             case 4:
-                topiccount = betweenQuotes(field);
+                creationdate = betweenQuotes(toTimestamp(field));
+                break;
+            case 5:
+                modified = betweenQuotes(field);
+                break;
+            //case 6:Consome o campo "index" do registro json
+            case 7: 
+                post = betweenQuotes(field.replace("\\", "\\\\"));
+                break;
+            case 8:
+                ord = betweenQuotes(field);
                 insertInto();
         }//switch
         
@@ -123,14 +152,14 @@ public class JsonSubSection extends JsonObject {
      * @throws SQLException Erro ao atualizar o banco
      */
     public static void main(String[] args) throws IOException, SQLException {
-        JsonSubSection s = 
-                new JsonSubSection (
-                    "json/subsections.json", 
+        JsonPost p = 
+                new JsonPost (
+                    "json/posts.json", 
                     new MySQL("localhost", "root", "eratostenes", "cc")
                 );
         
-        s.fillDatabaseTable(1);
+        p.fillDatabaseTable(29574);
         
     }//main()
     
-}//classe JsonSubSection
+}//classe JsonPost

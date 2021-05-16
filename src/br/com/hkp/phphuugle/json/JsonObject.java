@@ -4,8 +4,6 @@ package br.com.hkp.phphuugle.json;
 import br.com.hkp.phphuugle.mysql.MySQL;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /******************************************************************************
  * Super classe abstrata das classes relacionadas com os arquivos json que devem
@@ -56,6 +54,9 @@ public abstract class JsonObject {
     /* Conta registros lidos e gravados*/
     private int count = 0;
     
+    /*Comeca a gravar registros a partir de startIndex*/
+    private int startIndex;
+    
     /*[00]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
@@ -102,9 +103,11 @@ public abstract class JsonObject {
     --------------------------------------------------------------------------*/
     protected void insertInto(final String values) throws SQLException {
         
+        if (++count < startIndex) return;
+        
         String update = insertIntoPrefix + values;
         
-        System.out.printf ("%6d - %s\n", ++count, update);
+        System.out.printf ("%6d - %s\n", count, update);
         
         /*Se nenhuma insercao foi feita eh retornado 0*/
         if (mysql.update(update) == 0) throw new SQLException("No update");
@@ -168,82 +171,22 @@ public abstract class JsonObject {
     /*[05]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
-    private static final Pattern TIMESTAMP =  Pattern.compile (
-        "(\\d{2}) de " + "([a-zJFMAJSOND\u00e7]+)" +
-        " de (\\d{4}), (\\d{2}:\\d{2}:\\d{2})"    
-    );
-    
     /**
-     * Obtem o timestamp de uma data por extenso.
+     * Preenche a tabela do banco com os registros lidos do arquivo json. Inicia
+     * o preenchimento a partir do enesimo registro lido no arquivo. Se n = 10,
+     * serah gravado o decimo regisro lido no arquivo e os posteriores.
      * 
-     * @param datetime A String
+     * @param n Comeca a gravar registros na tabela a partir do enesimo registro
+     * lido no arquivo json
      * 
-     * @return O timestamp da data
+     * @throws IOException Em caso de erro de IO
      * 
-     * @throws SQLException Se a data nao puder ser convertida para timestamp
+     * @throws SQLException Falha no acesso ao banco
      */
-    protected String getTimestamp(final String datetime) throws SQLException {
+    public final void fillDatabaseTable(final int n) 
+    throws IOException, SQLException {
         
-        Matcher m = TIMESTAMP.matcher(datetime);
-                  
-        if (m.find()) { 
-                
-            String month = null;
-            
-            switch (m.group(2)) {
-                
-                case "Janeiro": 
-                    month = "01";
-                    break;
-                case "Fevereiro": 
-                    month = "02";
-                    break;     
-                case "Mar\u00e7o": 
-                    month = "03";
-                    break;   
-                 case "Abril": 
-                    month = "04";
-                    break;
-                case "Maio": 
-                    month = "05";
-                    break;     
-                case "Junho": 
-                    month = "06";
-                    break;   
-                case "Julho": 
-                    month = "07";
-                    break;
-                case "Agosto": 
-                    month = "08";
-                    break;     
-                case "Setembro": 
-                    month = "09";
-                    break;   
-                case "Outubro": 
-                    month = "10";
-                    break;
-                case "Novembro": 
-                    month = "11";
-                    break;     
-                case "Dezembro": 
-                    month = "12";
-               
-            }//switch
-            
-            return 
-                m.group(3) + "-" + month + "-" + m.group(1) + " " + m.group(4);
-      
-        }//if
-        
-        throw new SQLException("Fail getting timestamp " + datetime);
-        
-    }//GetTimestamp()
-        
-     
-    /*[06]----------------------------------------------------------------------
-    
-    --------------------------------------------------------------------------*/
-    public final void fillDatabaseTable() throws IOException, SQLException {
+        this.startIndex = n;
         
         while(true) {
             

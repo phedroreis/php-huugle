@@ -1,0 +1,23 @@
+@charset "UTF-8";
+
+@import "colors.css";
+
+dl.deflist-default
+{
+  margin:0;
+  padding: 5px;
+  border: solid 2px;
+}
+
+dl.deflist-default dt
+{
+  margin-top: 5px;
+  margin-bottom: 3px;
+  font-weight: bolder;
+}
+
+dl.deflist-default dd
+{
+  margin-bottom: 3px;
+  padding:0;
+}

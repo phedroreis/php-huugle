@@ -205,7 +205,7 @@ public class JsonUser extends JsonObject {
                     new MySQL("localhost", "root", "eratostenes", "cc")
                 );
         
-        u.fillDatabaseTable();
+        u.fillDatabaseTable(1);
     }
     
 }//classe JsonUser
