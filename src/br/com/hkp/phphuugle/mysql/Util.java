@@ -17,13 +17,14 @@ public final class Util {
     
     -------------------------------------------------------------------------*/
     private static final Pattern TIMESTAMP =  Pattern.compile (
-        "(\\d{2}) de " + "([a-zJFMAJSOND\u00e7]+)" +
-        " de (\\d{4}), (\\d{2}:\\d{2}:\\d{2})"    
+        "(\\d{2})\\D+?" + "([JFMAJSOND][a-z\u00e7]+)" +
+        "\\D+?(\\d{4})\\D+?(\\d{2}:\\d{2}:\\d{2})"    
     );
     /**
-     * Obtem o timestamp de uma data por extenso.
+     * Obtem o timestamp de uma data/hora por extenso escrita no formato
+     * DD de Nomedomes de AAAA, hh:mm:ss.
      * 
-     * @param datetime A String
+     * @param datetime A String da data/hora
      * 
      * @return O timestamp da data
      * 
@@ -87,5 +88,9 @@ public final class Util {
             new IllegalArgumentException("Can't get timestamp for " + datetime);
         
     }//GetTimestamp() 
+    
+    public static void main(String[] args) {
+        System.out.println(toTimestamp("31 Janeiro 2020 00:21:36"));
+    }
     
 }//classe Util

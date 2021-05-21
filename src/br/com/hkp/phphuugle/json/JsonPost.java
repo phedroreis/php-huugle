@@ -158,8 +158,17 @@ public class JsonPost extends JsonObject {
                     new MySQL("localhost", "root", "eratostenes", "cc")
                 );
         
-        p.fillDatabaseTable(29574);
+        p.fillDatabaseTable(245512);
+
         
     }//main()
+    
+    /*
+    Deu erro na data do comando abaixo. Serah bug do MySQL????
+    
+    INSERT INTO posts VALUES ('981076', '14036', 'u=11506', '2018-11-04 00:48:32', NULL, 'La Abadía del Crimen, jogo baseado no romance &#039;&#039;O Nome da Rosa&#039;&#039; de Umberto Eco. ', '924248');
+    
+    Para realizar a insercao a hora foi trocada para 01 e funcionou!
+    */
     
 }//classe JsonPost
