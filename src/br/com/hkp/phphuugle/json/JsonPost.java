@@ -158,7 +158,8 @@ public class JsonPost extends JsonObject {
                     new MySQL("localhost", "root", "eratostenes", "cc")
                 );
         
-        p.fillDatabaseTable(245512);
+        p.fillDatabaseTable(353750);
+
 
         
     }//main()
