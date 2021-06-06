@@ -101,7 +101,7 @@ public class JsonUser extends JsonObject {
     --------------------------------------------------------------------------*/
     private void insertInto() throws SQLException {
         
-        insertInto ( 
+        sqlCommand ( 
                 
             "(" + id + 
             SEP + nick + 
@@ -119,7 +119,7 @@ public class JsonUser extends JsonObject {
             
         );
         
-    }//inputInto()
+    }//insertInto()
     
     /*[02]----------------------------------------------------------------------
      Cada registro que eh lido do arquivo json eh atribuido ao seu respectivo

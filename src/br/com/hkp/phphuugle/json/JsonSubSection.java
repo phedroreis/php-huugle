@@ -35,7 +35,7 @@ public class JsonSubSection extends JsonObject {
     //O titulo da board
     private String title;
     
-    //chave estrangeira para a tabela sections
+    //Chave estrangeira para a tabela sections
     private String sectionid;
     
     //Num. de topicos em uma board
@@ -70,14 +70,14 @@ public class JsonSubSection extends JsonObject {
     --------------------------------------------------------------------------*/
     private void insertInto() throws SQLException {
         
-        insertInto (
+        sqlCommand (
             "(" + id +
             SEP + title + 
             SEP + sectionid + 
             SEP + topiccount + ");"
         );
         
-    }//inputInto()
+    }//insertInto()
     
     /*[02]----------------------------------------------------------------------
      Cada registro que eh lido do arquivo json eh atribuido ao seu respectivo

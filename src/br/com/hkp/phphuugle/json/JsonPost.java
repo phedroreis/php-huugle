@@ -18,9 +18,10 @@ CREATE TABLE `posts` (
   `topicid` smallint unsigned NOT NULL,
   `authorid` varchar(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `creationdate` timestamp NOT NULL,
-  `modified` varchar(80) COLLATE utf8mb4_bin DEFAULT NULL,
+  `modified` varchar(90) COLLATE utf8mb4_bin DEFAULT NULL,
   `post` mediumtext COLLATE utf8mb4_bin NOT NULL,
   `ord` int NOT NULL,
+  `filename` varchar(12) COLLATE utf8mb4_bin NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `topicid` (`topicid`),
   KEY `authorid` (`authorid`),
@@ -85,7 +86,7 @@ public class JsonPost extends JsonObject {
     --------------------------------------------------------------------------*/
     private void insertInto() throws SQLException {
         
-        insertInto (
+        sqlCommand (
             
             "(" + id + 
             SEP + topicid +
@@ -96,7 +97,7 @@ public class JsonPost extends JsonObject {
             SEP + ord + ");"
         );
         
-    }//inputInto()
+    }//insertInto()
     
     /*[02]----------------------------------------------------------------------
      Cada registro que eh lido do arquivo json eh atribuido ao seu respectivo
@@ -158,7 +159,7 @@ public class JsonPost extends JsonObject {
                     new MySQL("localhost", "root", "eratostenes", "cc")
                 );
         
-        p.fillDatabaseTable(353750);
+        p.fillDatabaseTable(515537);
 
 
         

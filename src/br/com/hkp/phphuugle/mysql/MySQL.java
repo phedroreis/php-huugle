@@ -83,7 +83,8 @@ public class MySQL
      * 
      * @param update A instrucao MySQL de atualizacao
      * 
-     * @return O numero de linhas atualizadas ou 0 se nao houve atualizacao
+     * @return O numero de linhas afetadas pelo comando  ou 0 se nao houve
+     * atualizacao
      * 
      * @throws SQLException Em caso de falha ao atualizar
      */

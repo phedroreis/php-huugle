@@ -5,35 +5,25 @@ import java.io.IOException;
 import java.sql.SQLException;
 
 /******************************************************************************
+ * Classe que insere os dados da coluna filename na tabela posts.
  * 
- * Classe relacionada a tabela sections do banco cc e ao arquivo sections.json.
- * Um objeto desta classe armazena os dados de uma secao do forum CC.
- * 
- * Estrutura da tabela sections :
- * 
-    CREATE TABLE `sections` (
-      `id` tinyint unsigned NOT NULL,
-      `title` varchar(11) COLLATE utf8mb4_bin DEFAULT NULL,
-       PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
- * 
- * @since 10 de maio de 2021 v1.0
+ * @since 30 de maio de 2021 v1.0
  * @version 1.0
  * @author "Pedro Reis"
  ******************************************************************************/
-public class JsonSection extends JsonObject {
+public class UpdatePosts extends JsonObject {
     
-    //Chave prim. Existiam 3 secoes : #c3, #c4, #c5
-    private String id;
+    //A id do post
+    private String postId;
     
-    //O titulo da secao. Pode ser Informacoes, Discussoes ou Diversao
-    private String title;
+    //O nome do arquivo onde esta o post
+    private String filename;
     
     /*[00]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
     /**
-     * Cria um objeto para acessar a tabela sections
+     * Cria um objeto para acessar a tabela posts
      * 
      * @param pathName O nome do arquivo json a ser lido com os dados para a 
      * tabela
@@ -42,28 +32,25 @@ public class JsonSection extends JsonObject {
      * 
      * @throws IOException Em caso de erro de IO
      */
-    public JsonSection (
+    public UpdatePosts (
         final String pathName,
         final MySQL mysql
     ) 
     throws IOException {
         
-        super(pathName, mysql, "sections");
+        super(mysql, pathName, "UPDATE posts SET filename = ");
         
     }//construtor
     
     /*[01]----------------------------------------------------------------------
-       Quando chamado, este metodo insere os valores correntes dos campos do
-       objeto no banco de dados.
+       Quando chamado, este metodo insere o nome do arquivo na coluna filename
+       referente ao post de id postId
     --------------------------------------------------------------------------*/
-    private void insertInto() throws SQLException {
+    private void update() throws SQLException {
         
-        sqlCommand (
-            "(" + id +
-            SEP + title +  ");"
-        );
+        sqlCommand (filename + " WHERE id = " + postId);
         
-    }//insertInto()
+    }//update()
     
     /*[02]----------------------------------------------------------------------
      Cada registro que eh lido do arquivo json eh atribuido ao seu respectivo
@@ -81,11 +68,14 @@ public class JsonSection extends JsonObject {
                 
         switch (index) {
             case 1:
-                id = betweenQuotes(field.replace("#c", ""));
+                postId= betweenQuotes(field.replace("msg", ""));
                 break;
             case 2:
-                title = betweenQuotes(field);
-                insertInto();
+                filename = 
+                    betweenQuotes(
+                        field.replace("topic=", "").replace(".html", "")
+                    );
+                update();
         }//switch
         
     }//put()
@@ -94,7 +84,8 @@ public class JsonSection extends JsonObject {
     
     --------------------------------------------------------------------------*/
     /**
-     * Le o arquivo json e cria e popula a tabela no banco de dados.
+     * Le o arquivo json e insere o nome do arquivo na respectiva linha da 
+     * tabela posts.
      * 
      * @param args n/a
      * 
@@ -103,14 +94,14 @@ public class JsonSection extends JsonObject {
      * @throws SQLException Erro ao atualizar o banco
      */
     public static void main(String[] args) throws IOException, SQLException {
-        JsonSection j = 
-                new JsonSection (
-                    "json/sections.json", 
+        UpdatePosts u = 
+                new UpdatePosts (
+                    "json/postid_file.json", 
                     new MySQL("localhost", "root", "eratostenes", "cc")
                 );
         
-        j.fillDatabaseTable(1);
+        u.fillDatabaseTable(1);
         
     }//main()
     
-}//classe JsonSection
+}//classe UpdatePosts

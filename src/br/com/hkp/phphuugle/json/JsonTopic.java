@@ -101,7 +101,7 @@ public class JsonTopic extends JsonObject {
     --------------------------------------------------------------------------*/
     private void insertInto() throws SQLException {
         
-        insertInto (
+        sqlCommand (
             
             "(" + id +
             SEP + title + 
@@ -115,7 +115,7 @@ public class JsonTopic extends JsonObject {
             SEP + ord + ");"
         );
         
-    }//inputInto()
+    }//insertInto()
     
     /*[02]----------------------------------------------------------------------
      Cada registro que eh lido do arquivo json eh atribuido ao seu respectivo

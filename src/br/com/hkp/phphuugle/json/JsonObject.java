@@ -33,36 +33,79 @@ public abstract class JsonObject {
      */
     protected static final String SEP = ", ";
     
-    /*A subclasse usarah esta variavel para contar quantos campos jah foram 
+    /**A subclasse usarah esta variavel para contar quantos campos jah foram 
     lidos em um registro. Quando todos os campos forem lidos devera ser setada 
     para 0, aguardando a leitura do proximo registro.
     */
     private int fieldIndex;
     
-    /*Um obj. para ler linha a linha o arquivo json*/
+    /**Um obj. para ler linha a linha o arquivo json*/
     private final TextLineReader textLineReader;
     
     /*O banco de dados onde os dados serao inseridos*/
     private final MySQL mysql;
     
-    /*
+    /**
     Uma String com a porcao iniicial da instrucao INSERT INTO que serah 
     executada por um objeto dessa classe Ex:"INSERT INTO sections (id, title)"
     */
     private final String insertIntoPrefix;
     
-    /* Conta registros lidos e gravados*/
+    /** Conta registros lidos e gravados*/
     private int count = 0;
     
-    /*Comeca a gravar registros a partir de startIndex*/
+    /**Comeca a gravar registros a partir de startIndex*/
     private int startIndex;
     
     /*[00]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
     /**
+     * Recebe o caminho e nome de um arquivo json e cria um ojbeto manipular
+     * uma tabela no banco de dados a partir dos dados lidos neste arquivo json.
+     * A manipulacao pode ser referente a insercao dos registros lidos no 
+     * arquivo na tabela ou alteracao de registros jah existentes na tabela.
+     * 
+     * @param mysql A conexao com o banco de dados. A conexao eh feita ao se 
+     * criar o objeto
+     * 
+     * @param pathName O nome e caminho do arquivo json.
+     * 
+     * @param command O parte inicial do comando SQL que sera executado para 
+     * cada registro lido no arquivo json
+     * 
+     * @throws IOException Em caso de erro de IO.
+     */
+    protected JsonObject (
+        
+        final MySQL mysql,
+        final String pathName,
+        final String command
+    )
+    throws IOException {
+        
+        //Um obj. para ler linha a linha o arquivo json
+        textLineReader = new TextLineReader(pathName);
+        
+        //Consome a 1a linha do arquivo. Esta linha e o caractere '{'
+        textLineReader.readLine(); 
+        
+        //O indice do campo que foi lido no registro
+        fieldIndex = 0;
+        
+        this.mysql = mysql;
+        
+        //O prefixo de toda instrucao de insercao no banco de dados
+        insertIntoPrefix = command;
+     
+    }//construtor
+    
+    /*[00]----------------------------------------------------------------------
+    
+    --------------------------------------------------------------------------*/
+    /**
      * Recebe o caminho e nome de um arquivo json e cria um ojbeto para gravar
-     * seus registro em uma tabela de banco de dados.
+     * seus registros em uma tabela de banco de dados.
      * 
      * @param pathName O nome e caminho do arquivo json.
      * 
@@ -81,38 +124,27 @@ public abstract class JsonObject {
     )
     throws IOException {
         
-        //Um obj. para ler linha a linha o arquivo json
-        textLineReader = new TextLineReader(pathName);
-        
-        //Consome a 1a linha do arquivo. Esta linha e o caractere '{'
-        textLineReader.readLine(); 
-        
-        //O indice do campo que foi lido no registro
-        fieldIndex = 0;
-        
-        this.mysql = mysql;
-        
-        //O prefixo de toda instrucao de insercao no banco de dados
-        insertIntoPrefix = 
-            "INSERT INTO " + tableName + " VALUES ";
-     
+        this(mysql, pathName, "INSERT INTO " + tableName + " VALUES ");
+      
     }//construtor
     
     /*[01]----------------------------------------------------------------------
-               Executa a instrucao de insercao de uma linha no BD
+               Executa a instrucao de insercao de uma linha no BD ou
+               de atualizacao de uma linha
     --------------------------------------------------------------------------*/
-    protected void insertInto(final String values) throws SQLException {
+    protected void sqlCommand(final String values) throws SQLException {
         
         if (++count < startIndex) return;
         
         String update = insertIntoPrefix + values;
         
-        System.out.printf ("%6d - %s\n", count, update);
+        System.out.println (count + " - " + update);
         
-        /*Se nenhuma insercao foi feita eh retornado 0*/
-        if (mysql.update(update) == 0) throw new SQLException("No update");
+        /*Este metodo soh deve alterar uma unica linha do BD a cada chamada*/
+        if (mysql.update(update) != 1) 
+            throw new SQLException("Error updating database");
         
-    }//insertInto()
+    }//sqlCommand()
     
     /*[02]----------------------------------------------------------------------
     

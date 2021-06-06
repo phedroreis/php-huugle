@@ -48,12 +48,12 @@ public class JsonPostidFile extends JsonObject {
     --------------------------------------------------------------------------*/
     private void insertInto() throws SQLException {
         
-        insertInto (
+        sqlCommand (
             "(" + postid +
             SEP + file +  ");"
         );
         
-    }//inputInto()
+    }//insertInto()
     
     /*[02]----------------------------------------------------------------------
      Cada registro que eh lido do arquivo json eh atribuido ao seu respectivo
