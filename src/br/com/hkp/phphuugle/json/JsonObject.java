@@ -21,8 +21,7 @@ import java.sql.SQLException;
  * @author "Pedro Reis"
  ******************************************************************************/
 public abstract class JsonObject {
-    
-       
+      
     /**
      * String para campo nao atribuido no arquivo json
      */
