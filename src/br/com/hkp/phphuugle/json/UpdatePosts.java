@@ -94,11 +94,12 @@ public class UpdatePosts extends JsonObject {
      * @throws SQLException Erro ao atualizar o banco
      */
     public static void main(String[] args) throws IOException, SQLException {
-        UpdatePosts u = 
-                new UpdatePosts (
-                    "json/postid_file.json", 
-                    new MySQL("localhost", "root", "eratostenes", "cc")
-                );
+        
+       UpdatePosts u = 
+            new UpdatePosts (
+                "json/postid_file.json", 
+                new MySQL("localhost", "root", "eratostenes", "cc")
+            );
         
         u.fillDatabaseTable(1);
         

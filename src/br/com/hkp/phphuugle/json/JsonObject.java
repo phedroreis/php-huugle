@@ -41,7 +41,7 @@ public abstract class JsonObject {
     /**Um obj. para ler linha a linha o arquivo json*/
     private final TextLineReader textLineReader;
     
-    /*O banco de dados onde os dados serao inseridos*/
+    /**O banco de dados onde os dados serao inseridos*/
     private final MySQL mysql;
     
     /**
@@ -60,7 +60,7 @@ public abstract class JsonObject {
     
     --------------------------------------------------------------------------*/
     /**
-     * Recebe o caminho e nome de um arquivo json e cria um ojbeto manipular
+     * Recebe o caminho e nome de um arquivo json e cria um ojbeto pra manipular
      * uma tabela no banco de dados a partir dos dados lidos neste arquivo json.
      * A manipulacao pode ser referente a insercao dos registros lidos no 
      * arquivo na tabela ou alteracao de registros jah existentes na tabela.
@@ -70,7 +70,7 @@ public abstract class JsonObject {
      * 
      * @param pathName O nome e caminho do arquivo json.
      * 
-     * @param command O parte inicial do comando SQL que sera executado para 
+     * @param command Parte inicial do comando SQL que sera executado para 
      * cada registro lido no arquivo json
      * 
      * @throws IOException Em caso de erro de IO.
@@ -197,7 +197,7 @@ public abstract class JsonObject {
         else
             return "'" + value + "'";
         
-    }//format()
+    }//betweenQuotes()
     
     /*[05]----------------------------------------------------------------------
     
@@ -207,17 +207,17 @@ public abstract class JsonObject {
      * o preenchimento a partir do enesimo registro lido no arquivo. Se n = 10,
      * serah gravado o decimo regisro lido no arquivo e os posteriores.
      * 
-     * @param n Comeca a gravar registros na tabela a partir do enesimo registro
-     * lido no arquivo json
+     * @param startIndex Comeca a gravar registros na tabela a partir do enesimo
+     * registro lido no arquivo json
      * 
      * @throws IOException Em caso de erro de IO
      * 
      * @throws SQLException Falha no acesso ao banco
      */
-    public final void fillDatabaseTable(final int n) 
+    public final void fillDatabaseTable(final int startIndex) 
     throws IOException, SQLException {
         
-        this.startIndex = n;
+        this.startIndex = startIndex;
         
         while(true) {
             

@@ -1,0 +1,2 @@
+ATUALIZACAO FALHOU para topico: '17850'
+java.sql.SQLException: Error updating database

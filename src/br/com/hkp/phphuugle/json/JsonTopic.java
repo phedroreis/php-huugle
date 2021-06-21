@@ -24,15 +24,22 @@ import java.sql.SQLException;
       `pages` smallint unsigned NOT NULL,
       `pollid` smallint unsigned DEFAULT NULL,
       `ord` smallint unsigned NOT NULL,
+      `lastpostid` int NOT NULL,
+      `lastpostdate` timestamp NOT NULL,
+      `lockedtopic` tinyint(1) NOT NULL,
+      `stickedtopic` tinyint(1) NOT NULL,
       PRIMARY KEY (`id`),
       KEY `authorid` (`authorid`),
       KEY `subsectionid` (`subsectionid`),
+      KEY `topics_ibfk_3` (`lastpostid`),
       CONSTRAINT `topics_ibfk_1` FOREIGN KEY (`authorid`) 
       REFERENCES `users` (`id`),
-      CONSTRAINT `topics_ibfk_2` FOREIGN KEY (`subsectionid`) REFERENCES 
-     `subsections` (`id`)
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-    
+      CONSTRAINT `topics_ibfk_2` FOREIGN KEY (`subsectionid`) 
+      REFERENCES `subsections` (`id`),
+      CONSTRAINT `topics_ibfk_3` FOREIGN KEY (`lastpostid`)
+      REFERENCES `posts` (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
+
  * 
  * @since 13 de maio de 2021 v1.0
  * @version 1.0
