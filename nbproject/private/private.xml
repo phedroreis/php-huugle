@@ -3,10 +3,22 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/userhugo/Desenvolvimento/java/NetBeansProjects/php-huugle/src/br/com/hkp/phphuugle/json/JsonTopic.java</file>
-            <file>file:/home/userhugo/Desenvolvimento/java/NetBeansProjects/php-huugle/src/br/com/hkp/phphuugle/json/JsonObject.java</file>
+            <file>file:/home/userhugo/Desenvolvimento/java/NetBeansProjects/php-huugle/src/br/com/hkp/phphuugle/json/JsonPoll.java</file>
+            <file>file:/home/userhugo/Desenvolvimento/java/NetBeansProjects/php-huugle/src/br/com/hkp/phphuugle/json/JsonPostidFile.java</file>
+            <file>file:/home/userhugo/Desenvolvimento/java/NetBeansProjects/php-huugle/src/br/com/hkp/phphuugle/json/JsonPollVotes.java</file>
             <file>file:/home/userhugo/Desenvolvimento/java/NetBeansProjects/php-huugle/src/br/com/hkp/phphuugle/json/UpdatePosts.java</file>
             <file>file:/home/userhugo/Desenvolvimento/java/NetBeansProjects/php-huugle/src/br/com/hkp/phphuugle/json/UpdateTopics.java</file>
+            <file>file:/home/userhugo/Desenvolvimento/java/NetBeansProjects/php-huugle/src/br/com/hkp/phphuugle/json/JsonPost.java</file>
+            <file>file:/home/userhugo/Desenvolvimento/java/NetBeansProjects/php-huugle/src/br/com/hkp/phphuugle/json/Tokenizer.java</file>
+            <file>file:/home/userhugo/Desenvolvimento/java/NetBeansProjects/php-huugle/src/br/com/hkp/phphuugle/mysql/MySQL.java</file>
+            <file>file:/home/userhugo/Desenvolvimento/java/NetBeansProjects/php-huugle/src/br/com/hkp/phphuugle/json/TextLineReader.java</file>
+            <file>file:/home/userhugo/Desenvolvimento/java/NetBeansProjects/php-huugle/src/br/com/hkp/phphuugle/json/JsonTopic.java</file>
+            <file>file:/home/userhugo/Desenvolvimento/java/NetBeansProjects/php-huugle/src/br/com/hkp/phphuugle/json/JsonObject.java</file>
+            <file>file:/home/userhugo/Desenvolvimento/java/NetBeansProjects/php-huugle/src/br/com/hkp/phphuugle/json/JsonSubSection.java</file>
+            <file>file:/home/userhugo/Desenvolvimento/java/NetBeansProjects/php-huugle/src/br/com/hkp/phphuugle/json/JsonUser.java</file>
+            <file>file:/home/userhugo/Desenvolvimento/java/NetBeansProjects/php-huugle/src/br/com/hkp/phphuugle/mysql/Util.java</file>
+            <file>file:/home/userhugo/Desenvolvimento/java/NetBeansProjects/php-huugle/src/br/com/hkp/phphuugle/json/JsonPollOption.java</file>
+            <file>file:/home/userhugo/Desenvolvimento/java/NetBeansProjects/php-huugle/src/br/com/hkp/phphuugle/json/JsonSection.java</file>
         </group>
     </open-files>
 </project-private>

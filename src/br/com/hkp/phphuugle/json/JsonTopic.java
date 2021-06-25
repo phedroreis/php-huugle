@@ -22,7 +22,7 @@ import java.sql.SQLException;
       `creationdate` timestamp NOT NULL,
       `views` int NOT NULL,
       `pages` smallint unsigned NOT NULL,
-      `pollid` smallint unsigned DEFAULT NULL,
+      `poll` smallint unsigned DEFAULT NULL,
       `ord` smallint unsigned NOT NULL,
       `lastpostid` int NOT NULL,
       `lastpostdate` timestamp NOT NULL,
@@ -72,7 +72,7 @@ public class JsonTopic extends JsonObject {
     private String pages;
     
     //Se o topico inclui enquete
-    private String pollid;
+    private String poll;
     
     //A ordem desse topico na sequencia de criacao dos topicos    
     private String ord;   
@@ -118,7 +118,7 @@ public class JsonTopic extends JsonObject {
             SEP + creationdate +  
             SEP + views +  
             SEP + pages +  
-            SEP + pollid + 
+            SEP + poll + 
             SEP + ord + ");"
         );
         
@@ -165,7 +165,7 @@ public class JsonTopic extends JsonObject {
                 pages = betweenQuotes(field);
                 break;
             case 10:
-                pollid = betweenQuotes(field.replace("poll=", ""));
+                poll = betweenQuotes(field.replace("poll=", ""));
                 break;
             case 11:
                 ord = betweenQuotes(field);               

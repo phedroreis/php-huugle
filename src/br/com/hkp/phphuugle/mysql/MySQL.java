@@ -15,7 +15,7 @@ import java.sql.SQLException;
  * @version 1.0
  * @author "Pedro Reis"
  *****************************************************************************/
-public class MySQL
+public final class MySQL
 {
     private static final String PREFIX_DATABASE_URL = "jdbc:mysql://";
     

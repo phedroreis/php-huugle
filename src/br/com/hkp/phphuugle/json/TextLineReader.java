@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
  * @version 1.0
  * @author "Pedro Reis"
  ******************************************************************************/
-public final class TextLineReader {
+final class TextLineReader {
     
     private final BufferedReader bufferedReader;
     
