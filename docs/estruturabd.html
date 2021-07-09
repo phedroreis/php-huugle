@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/frames.css"/>
+    <title>Estrutura BD</title>
+    <style type="text/css">
+
+        i::before {
+            content: "[";
+        }
+
+        i::after{
+            content: "] ";
+        }
+
+        ol li{
+            font-size: 20px;
+            padding-left: 6px;
+            background-color: salmon;
+        }
+
+        dt{
+             color: var(--h1-color);
+        }
+
+        span.sqlcommand{
+           color: blue;
+        }
+    </style>
+</head>
+<body>
+    <h2>Estrutura do Banco de Dados</h2> 
+    <h3> Tabelas</h3>
+    <ol>
+        <li>users</li>
+        <dl>
+            <dt>id</dt>
+            <dd>
+                <p><i>varchar(26)</i> Chave primária</p> 
+                <p>É uma string com prefixo 'u=' ou 'v='. O prefixo 'u=' é atribuído a usuários registrados e 'v=' a usuários "visitantes" (geralmente usuários desinscritos do fórum)</p>
+            </dd>
+            <dt>nick</dt>
+            <dd>
+                <p><i>varchar(34)</i> O nick do usuário</p> 
+            </dd>
+            <dt>lev</dt>
+            <dd>
+                <p><i>varchar(14)</i> O nível do usuário pelo número de msgs. ou função no fórum</p> 
+            </dd>
+            <dt>membergroup</dt>
+            <dd>
+                <p><i>varchar(22)</i> O grupo do usuário (moderador, webmaster, etc...)</p> 
+            </dd>
+            <dt>postcount</dt>
+            <dd>
+                <p><i>smallint</i> Número de postagens deste usuário</p> 
+            </dd>
+            <dt>gender</dt>
+            <dd>
+                <p><i>enum</i> M ou F</p> 
+            </dd>
+            <dt>avatar</dt>
+            <dd>
+                <p><i>varchar(47)</i> O nome do arquivo de avatar</p> 
+                <p>Arquivos da pasta clubecetico.org/forum/avatares</p>
+            </dd>
+            <dt>blurb</dt>
+            <dt>signature</dt>
+            <dt>signatureText</dt>
+            <dt>descriptions</dt>
+            <dt>profil</dt>
+            <dd>
+                <p>Os registros acima são textos onde o usuário se define ou diz algo sobre si. "signature" armazena o HTML bruto da assinatura do usuário e "signatureText" apenas o texto da assinatura</p>
+            </dd>
+            <dt>sites</dt>
+            <dd><i>text</i> Uma lista de sites fornecida pelo usuário</dd>
+            
+        </dl>
+        <li>topics</li>
+        <dl>
+            <dt>id</dt>
+            <dd><p><i>smallint</i> Chave primária</p></dd>
+            <dt>title</dt>
+            <dd><p><i>text</i> O título do tópico</p></dd>
+            <dt>authorid</dt>
+            <dd><p><i>varchar(26)</i> Chave estrangeira para tabela users</p></dd>
+            <dt>subsectionid</dt>
+            <dd><p><i>tinyint</i> Chave estrangeira para tabela subsections</p></dd>
+            <dt>postid</dt>
+            <dd>
+                <p><i>int</i> Chave estrangeira para tabela posts</p>
+                <p>Aponta para o primeiro post de um tópico</p>
+            </dd>
+            <dt>creationdate</dt>
+            <dd><p><i>timestamp</i> Data de criação do tópico</p></dd>
+            <dt>views</dt>
+            <dd><p><i>int</i> Quantas vezes o tópico foi visualizado</p></dd>
+            <dt>pages</dt>
+            <dd><p><i>smallint</i> Número de páginas do tópico</p></dd>
+            <dt>poll</dt>
+            <dd>
+                <p><i>smallint</i> Um valor diferente de null indica que o tópico tem uma enquete</p>
+                <p>Se o tópico contém enquete o valor desse campo será o mesmo da id do tópico</p>
+                <p>As enquetes podem ter listas de opções de resposta e correspondentes listas de votos para cada opção. Estas listas podem ser recuperadas, respectivamente, nas tabelas polloptions e pollvotes</p>
+                <p>No entanto nem todos os usuários criavam corretamente suas enquetes e às vezes não forneciam uma lista de opções para os foristas votarem</p>
+                <p>Também quando uma enquete não recebeu nenhum voto, não haverá um registro na tabela pollvotes para este tópico. Embora possa haver um registo na tabela polloptions, listando as opções de resposta da enquete</p>
+                <p>O comando abaixo listará todas as enquetes com as opções de resposta e os respectivos votos dados a cada opção</p>
+                <p><span class="sqlcommand">SELECT</span> topics.id, polls.pollquestion, polloptions.option, pollvotes.votes, polls.totalvotes <span class="sqlcommand">FROM</span> topics
+                    <br/><span class="sqlcommand">INNER JOIN</span> polls 
+                    <br/><span class="sqlcommand">INNER JOIN</span> polloptions 
+                    <br/><span class="sqlcommand">INNER JOIN</span> pollvotes
+                    <br/><span class="sqlcommand">WHERE</span> polls.topicid = topics.id 
+                    <br/><span class="sqlcommand">AND</span> polloptions.pollid = polls.id 
+                    <br/><span class="sqlcommand">AND</span> pollvotes.pollid = polls.id
+                    <br/><span class="sqlcommand">AND</span> polloptions.optionindex = pollvotes.votesindex;</p>
+
+            </dd>
+            <dt>ord</dt>
+            <dd><p><i>smallint</i> ord = n indica que o tópico foi o enésimo a ser criado</p></dd>
+            <dt>lastpostid</dt>
+            <dd>
+                <p><i>int</i> Chave estrangeira para tabela posts</p>
+                <p>Aponta para o último post de um tópico</p>
+            </dd>
+            <dt>lastpostdate</dt>
+            <dd><p><i>timestamp</i> A data de criação do último post de um tópico</p></dd>
+            <dt>lockedtopic</dt>
+            <dd><p><i>tinyint(1) ou boolean</i> Indica se o tópico foi trancado</p></dd>
+            <dt>fixedtopic</dt>
+            <dd>
+                <p><i>tinyint(1) ou boolean</i> Indica se o tópico foi fixado</p>
+                <p>Tópicos fixados são sempre exibidos no início de uma página de subseção</p>
+            </dd>
+        </dl>
+        <li>posts</li>
+        <dl>
+            <dt>id</dt>
+            <dd><p><i>int</i> Chave primária</p> </dd>
+            <dt>topicid</dt>
+            <dd><p><i>smallint</i> Chave estrangeira para a tabela topics. Indico o tópico onde foi publicado o post</p></dd>
+            <dt>authorid</dt>
+            <dd><p><i>varchar(26)</i> Chave estrangeira para a tabela users. Indica o autor do post</p></dd>
+            <dt>creationdate</dt>
+            <dd><p><i>timestamp</i>A data de publicação do post</p></dd>
+            <dt>modified</dt>
+            <dd><p><i>varchar(90)</i>Pode ser null ou um texto indicando quando e quem modificou o post</p></dd>
+            <dt>post</dt>
+            <dd><p><i>mediumtext</i>O código HTML bruto do post</p></dd>
+            <dt>ord</dt>
+            <dd><p><i>int</i> ord = n indica que foi o enésimo post a ser publicado no fórum</p></dd>
+            <dt>filename</dt>
+            <dd>
+                <p><i>varchar(12)</i> Indica o nome do arquivo HTML (no conjunto de arquivos da cópia estática) onde se encontra o post</p>
+                <p>A estrutura da URL para localizar um post no servidor é https://clubecetico.org/acervo/forum/topic=xxxx.yyy.html#msgzzzz</p>
+                <p>Onde xxxx é a id do tópico, yyy o núm. da página do tópico onde está o post e zzzz é a id do post</p>
+                <p>No entanto este registro do BD só armazena a parte xxxx.yyy da URL</p>
+                <p>Portanto se o registro filename de um post de id = '1009190' for, por exemplo, '30682.0', então a URL para visualizar este post no navegador será <a href="https://clubecetico.org/acervo/forum/topic=30682.0.html#msg1009190" target="_blank">https://clubecetico.org/acervo/forum/topic=30682.0.html#msg1009190</a></p>
+            </dd>
+        </dl>
+        <li>sections</li>
+        <dl>
+            <dt>id</dt>
+            <dd><p><i>tinyint</i>A id de uma seção contendo subseções do fórum</p></dd>
+            <dt>title</dt>
+            <dd><p><i>varchar(11)</i>O nome da seção</p></dd>
+
+        </dl>
+        <li>subsections</li>
+        <dl>
+            <dt>id</dt>
+            <dd><p><i>tinyint</i>A id de uma subseção contendo tópicos do fórum</p></dd>
+            <dt>title</dt>
+            <dd><p><i>varchar(46)</i>O nome da subseção</p></dd>
+            <dt>sectionid</dt>
+            <dd><p><i>tinyint</i>Chave estrangeira para tabela sections</p></dd>
+            <dt>topiccount</dt>
+            <dd><p><i>smallint</i>A quantidade de tópicos publicados na subseção</p></dd>
+        </dl>
+        <li>polls</li>
+        <dl>
+            <dt>id</dt>
+            <dd><p><i>smallint</i>Chave primária</p></dd>
+            <dt>topicid</dt>
+            <dd><p><i>smallint</i>Chave estrangeira para a tabela topics. Indica o tópico onde foi publicada a enquete</p></dd>
+            <dt>pollquestion</dt>
+            <dd><p><i>mediumtext</i>A pergunta de uma enquete</p></dd>
+            <dt>totalvoltes</dt>
+            <dd><p><i>smallint</i>O total de votos de uma enquete</p></dd>
+            <dt>finished</dt>
+            <dd><p><i>timestamp</i>A data de quando uma enquete foi encerrada ou null se não foi encerrada </p></dd>
+        </dl>
+        <li>polloptions</li>
+        <dl>
+           <dt>pollid</dt>
+           <dd><p><i>smallint</i>Chave estrangeira para a tabela polls</p></dd>
+           <dt>optionindex</dt>
+           <dd>
+               <p><i>tinyint</i>As opções de resposta fornecidas na enquete são indexadas por este campo e correspondem aos índices das respectivas respostas na tabela pollvotes</p>
+               <p>Por exemplo: se uma enquete tem duas opções para resposta como SIM ou NÃO, a 1a opção é numerada com 1 e a segunda com 2. Logo, na tabela pollvotes o número de  votos dados para SIM estará também indexado por 1 e o número de votos para NÃO estará indexado como 2. Para poder se associar os votos dados à sua respectiva opção</p>
+               <p>Para entender como é feita esta associação examine o comando SQL abaixo:</p>
+               <p><span class="sqlcommand">SELECT</span> topics.id, polls.pollquestion, polloptions.option, pollvotes.votes, polls.totalvotes <span class="sqlcommand">FROM</span> topics
+                <br/><span class="sqlcommand">INNER JOIN</span> polls 
+                <br/><span class="sqlcommand">INNER JOIN</span> polloptions 
+                <br/><span class="sqlcommand">INNER JOIN</span> pollvotes
+                <br/><span class="sqlcommand">WHERE</span> polls.topicid = topics.id 
+                <br/><span class="sqlcommand">AND</span> polloptions.pollid = polls.id 
+                <br/><span class="sqlcommand">AND</span> pollvotes.pollid = polls.id
+                <br/><span class="sqlcommand">AND</span> polloptions.optionindex = pollvotes.votesindex;</p>
+                <p>Este comando listará todas as enquetes com seus títulos, a id do tópico onde foram publicadas, cada uma das opções de resposta com os respectivos votos dados a cada uma destas opções e também o total de votos atribuídos em uma enquete</p>
+            </dd>
+            <dt>option</dt>
+            <dd>
+                <p><i>mediumtext</i>É uma opção de resposta. Cada linha nesta tabela é o registro de uma única opção de resposta em uma enquete</p>
+                <p>Se uma enquete do fórum tinha 10 opções para votar então haverá 10 linhas para esta enquete nesta tabela. Uma para cada opção de resposta</p>
+            </dd>
+        </dl>
+        <li>pollvotes</li>
+        <dl>
+            <dt>pollid</dt>
+            <dd><p><i>smallint</i>Chave estrangeira para a tabela polls onde foram dados os votos</p>
+            <dt>votesindex</dt>
+                <dd>
+                    <p><i>tinyint</i>Os votos dados para cada opção de resposta  na enquete são indexados por este campo e correspondem aos índices das respectivas opções na tabela polloptions</p>
+                    <p>Por exemplo: se uma enquete tem duas opções para resposta como SIM ou NÃO, a 1a opção é numerada com 1 e a segunda com 2. Logo, na tabela pollvotes o número de  votos dados para SIM estará também indexado por 1 e o número de votos para NÃO estará indexado como 2. Para poder se associar os votos dados à sua respectiva opção</p>
+                    <p>Para entender como é feita esta associação examine o comando SQL abaixo:</p>
+                    <p><span class="sqlcommand">SELECT</span> topics.id, polls.pollquestion, polloptions.option, pollvotes.votes, polls.totalvotes <span class="sqlcommand">FROM</span> topics
+                     <br/><span class="sqlcommand">INNER JOIN</span> polls 
+                     <br/><span class="sqlcommand">INNER JOIN</span> polloptions 
+                     <br/><span class="sqlcommand">INNER JOIN</span> pollvotes
+                     <br/><span class="sqlcommand">WHERE</span> polls.topicid = topics.id 
+                     <br/><span class="sqlcommand">AND</span> polloptions.pollid = polls.id 
+                     <br/><span class="sqlcommand">AND</span> pollvotes.pollid = polls.id
+                     <br/><span class="sqlcommand">AND</span> polloptions.optionindex = pollvotes.votesindex;</p>
+                     <p>Este comando listará todas as enquetes com seus títulos, a id do tópico onde foram publicadas, cada uma das opções de resposta com os respectivos votos dados a cada uma destas opções e também o total de votos atribuídos em uma enquete</p>
+                 </dd>
+                 <dt>votes</dt>
+                 <dd>
+                     <p><i>smallint</i>Se a coluna votesindex = 3, por exemplo, então a coluna votes desta tabela se refere aos votos dados à opção 3 correspondente na tabela polloptions</p>
+                     <p> Exemplo: suponha uma linha desta tabela com pollid = 100, votesindex = 2 e votes = 15. Significa que a opção 2 (polloptions.optionindex = 2) da enquete com id = 100 recebeu 15 votos</p>
+                 </dd>
+        </dl>
+
+    </ol>
+
+    <hr>
+
+    <h3>Comando SQL para criar o banco:</h3>
+
+    <p><span class="sqlcommand">CREATE DATABASE</span> `cc` <span class="sqlcommand">DEFAULT CHARACTER SET</span> utf8mb4 <span class="sqlcommand">COLLATE</span> utf8mb4_bin <span class="sqlcommand">DEFAULT ENCRYPTION='N'</span>;</p>
+
+    <hr>
+
+    <a href="documentacao.html" target="frame" class="nav-button nav-button-prev">Anterior</a>
+
+    <a href="er.html" target="frame" class="nav-button nav-button-next">Próxima</a>   
+</body>
+</html>
