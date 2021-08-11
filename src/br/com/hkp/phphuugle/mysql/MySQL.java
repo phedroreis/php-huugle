@@ -23,8 +23,7 @@ public final class MySQL
     
     private final Statement statement;
     
-    private ResultSet resultSet;
-    
+       
     /*[00]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
@@ -70,9 +69,8 @@ public final class MySQL
      */
     public ResultSet query(final String query) throws SQLException {
         
-        resultSet = statement.executeQuery(query);
-        return resultSet;
-      
+        return statement.executeQuery(query);
+
     }//query()
     
     /*[02]----------------------------------------------------------------------
@@ -93,21 +91,7 @@ public final class MySQL
         return statement.executeUpdate(update);
     }//update()
     
-    /*[03]----------------------------------------------------------------------
-    
-    --------------------------------------------------------------------------*/
-    /**
-     * Retorna os metadados da ultima consulta realizada.
-     * 
-     * @return Um objeto ResultSetMetaData com o metadados da ultima consulta
-     * realizada
-     * 
-     * @throws SQLException Em caso de falha ao consultar o banco
-     */
-    public ResultSetMetaData getMetaData() throws SQLException {
-        return resultSet.getMetaData();
-    }//getMetaData()
-   
+  
     
 }//classe MySQL
 
