@@ -20,11 +20,17 @@ public final class Collect {
     private static final Pattern WORD_REGEX = 
         Pattern.compile("[a-záàâãéêíóôõúç]{4,16}");
     
+    private static final Pattern EMPHASIZED_WORD_REGEX =
+        Pattern.compile(
+            "(<i>|<b>|<strong>|<em>)\\s*([a-záàâãéêíóôõúç]{4,16})" +
+            "\\s*(<\\/i>|<\\/b>|<\\/strong>|<\\/em>)"
+        );
+    
     private final MySQL postsQuery;
     
     private final MySQL topicsQuery;
     
-    private static final int TOTAL_NUMBER_OF_POSTS = 10;//951943;
+    private static final int TOTAL_NUMBER_OF_POSTS = 30;//951943;
     
     private static final int STEP = 10;
     
@@ -38,15 +44,6 @@ public final class Collect {
         topicsQuery = new MySQL("localhost", "root", "eratostenes", "cc");
         
     }//construtor
-    
-    /*[00]----------------------------------------------------------------------
-    
-    --------------------------------------------------------------------------*/    
-    private String stripTags(final String text) {
-        
-        return text.replaceAll("<.+?>", "");
-        
-    }//stripTags()    
     
     /*[00]----------------------------------------------------------------------
     
@@ -100,30 +97,53 @@ public final class Collect {
     
     /*[00]----------------------------------------------------------------------
     
+    --------------------------------------------------------------------------*/     
+    private HashSet<String> buildEmphasizedsWordsSet(final String post) {
+        
+        HashSet<String> emphasizedsWordsSet = new HashSet<>();
+        
+        Matcher matcher = EMPHASIZED_WORD_REGEX.matcher(post);
+        
+        while (matcher.find()) emphasizedsWordsSet.add(matcher.group(2));
+        
+        return emphasizedsWordsSet;
+        
+    }//buildEmphasizedsWordsSet()
+
+    /*[00]----------------------------------------------------------------------
+    
     --------------------------------------------------------------------------*/       
     private HashMap<String, Integer> buildWordsRankMap(
         final String post,
-        final HashSet<String> hashSet
+        final HashSet<String> titleWordsSet,
+        final HashSet<String> emphasizedsWordsSet
     )
         
     {
         HashMap<String, Integer> hashMap = new HashMap<>();
         
-        String lowerPost = stripTags(post).toLowerCase();
+        String nonHtmlPost = post.replaceAll("<.+?>", "");
         
-        Matcher matcher = WORD_REGEX.matcher(lowerPost);
+        Matcher matcher = WORD_REGEX.matcher(nonHtmlPost);
         
         String word; int rank; 
         
         while (matcher.find()) {
             
-            word = matcher.group();
+            word = matcher.group(); 
             
-            if (hashSet.contains(word))
-                rank = 20;
+            boolean wordPresentInTopicTitle = titleWordsSet.contains(word);
+            
+            boolean wordEmphasized = emphasizedsWordsSet.contains(word);
+
+            
+            if (wordPresentInTopicTitle && wordEmphasized)
+                rank = 9;
+            else if (wordPresentInTopicTitle || wordEmphasized)
+                rank = 3;
             else
                 rank = 1;
-            
+   
             if (hashMap.containsKey(word)) rank += hashMap.get(word);
             
             hashMap.put(word, rank);
@@ -137,33 +157,51 @@ public final class Collect {
     /*[00]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
+    private void updateDatabases(
+        final int postid,
+        final HashMap<String, Integer> wordsRankMap
+    ) 
+    {
+        
+        for (String key: wordsRankMap.keySet()) {
+            System.out.println (
+                key + " : " + wordsRankMap.get(key) + " : post = " + postid
+            );
+        }
+        
+    }//updateDatabases()
+    
+    /*[00]----------------------------------------------------------------------
+    
+    --------------------------------------------------------------------------*/
     public void processResultSet(final ResultSet resultSet) 
         throws SQLException {
         
         String post;
-        int id;
+        int postid;
         int topicid;
-        HashSet<String> hashSet;
-        HashMap<String, Integer> hashMap;
+        HashSet<String> titleWordsSet;
+        HashSet<String> emphasizedsWordsSet;
+        HashMap<String, Integer> wordsRankMap;
         
                
         while (resultSet.next()) {
             
-            post = (String)resultSet.getObject("post");
-            id = (Integer)resultSet.getObject("id");
+            post = ((String)resultSet.getObject("post")).toLowerCase();
+            postid = (Integer)resultSet.getObject("id");
             topicid = (Integer)resultSet.getObject("topicid");
-            System.out.printf("%d --- %s\n%s\n", id, topicid, post);
             
-           
-            hashSet = buildTitleWordsSet(topicid);
+            System.out.printf("%d --- %s\n%s\n", postid, topicid, post);
+
+            titleWordsSet = buildTitleWordsSet(topicid);
             
-            hashMap = buildWordsRankMap(post, hashSet);
+            emphasizedsWordsSet = buildEmphasizedsWordsSet(post);
             
-            for (String key: hashMap.keySet()) {
-                System.out.println(key + " : " + hashMap.get(key));
-            }
+            wordsRankMap = 
+                buildWordsRankMap(post, titleWordsSet, emphasizedsWordsSet);
             
-            
+            updateDatabases(postid, wordsRankMap);
+ 
         }//while
         
     }//processResultSet()
