@@ -1,6 +1,10 @@
 package br.com.hkp.phphuugle.makedb;
 
+import static br.com.hkp.phphuugle.makedb.Util.TOTAL_NUMBER_OF_POSTS;
+import static br.com.hkp.phphuugle.makedb.Util.WORD_REGEX;
+import static br.com.hkp.phphuugle.makedb.Util.getWordsExcludedsSet;
 import br.com.hkp.phphuugle.mysql.MySQL;
+import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.util.HashMap;
@@ -17,9 +21,6 @@ import java.util.regex.Pattern;
  ******************************************************************************/
 public final class Collect {
     
-    private static final Pattern WORD_REGEX = 
-        Pattern.compile("[a-záàâãéêíóôõúç]{4,16}");
-    
     private static final Pattern EMPHASIZED_WORD_REGEX =
         Pattern.compile(
             "(<i>|<b>|<strong>|<em>)\\s*([a-záàâãéêíóôõúç]{4,16})" +
@@ -30,19 +31,30 @@ public final class Collect {
     
     private final MySQL topicsQuery;
     
-    private static final int TOTAL_NUMBER_OF_POSTS = 30;//951943;
+    private final MySQL wordspostsUpdate;
     
-    private static final int STEP = 10;
+    private static final int STEP = 200;
+    
+    private final HashSet<String> excludedsWordsSet;
+    
+    private int countRowsInDatabase;
     
     /*[00]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
-    public Collect() throws SQLException {
+    public Collect() throws SQLException, FileNotFoundException {
         
         postsQuery = new MySQL("localhost", "root", "eratostenes", "cc");
         
         topicsQuery = new MySQL("localhost", "root", "eratostenes", "cc");
         
+        wordspostsUpdate = new MySQL("localhost", "root", "eratostenes", "cc");
+        
+        excludedsWordsSet = getWordsExcludedsSet();
+        
+        
+        countRowsInDatabase = 0;
+
     }//construtor
     
     /*[00]----------------------------------------------------------------------
@@ -50,7 +62,7 @@ public final class Collect {
     --------------------------------------------------------------------------*/
     public ResultSet readPosts(final int start) throws SQLException {
         
-        return topicsQuery.query(
+        return postsQuery.query(
             "SELECT id, topicid, post FROM posts LIMIT " + 
             start + ", " + STEP + ";"
         );
@@ -62,7 +74,7 @@ public final class Collect {
     --------------------------------------------------------------------------*/      
     public ResultSet readTopic(final int topicid)throws SQLException {
                  
-        return postsQuery.query(
+        return topicsQuery.query(
             "SELECT title FROM topics WHERE id = " + topicid + ";"
         );
         
@@ -132,6 +144,8 @@ public final class Collect {
             
             word = matcher.group(); 
             
+            if (excludedsWordsSet.contains(word)) continue;
+            
             boolean wordPresentInTopicTitle = titleWordsSet.contains(word);
             
             boolean wordEmphasized = emphasizedsWordsSet.contains(word);
@@ -152,8 +166,8 @@ public final class Collect {
         
         return hashMap;
         
-    }
-    
+    }//buildWordsRankMap()
+
     /*[00]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
@@ -161,14 +175,27 @@ public final class Collect {
         final int postid,
         final HashMap<String, Integer> wordsRankMap
     ) 
-    {
+        throws SQLException {
+        
+        int numberOfWordsOnThisPost = wordsRankMap.size();
+        
+        if (numberOfWordsOnThisPost == 0) return;
+        
+        countRowsInDatabase += numberOfWordsOnThisPost;
+        
+        String update = 
+            "INSERT INTO wordsposts (word, postid, ranking) VALUES";
         
         for (String key: wordsRankMap.keySet()) {
-            System.out.println (
-                key + " : " + wordsRankMap.get(key) + " : post = " + postid
-            );
+            
+            update += "\n('" + key + "', '" + postid + "', '" + 
+                      wordsRankMap.get(key) + "'),";
         }
         
+        update = (update + "*").replace(",*", ";");
+        
+        wordspostsUpdate.update(update);
+     
     }//updateDatabases()
     
     /*[00]----------------------------------------------------------------------
@@ -190,9 +217,7 @@ public final class Collect {
             post = ((String)resultSet.getObject("post")).toLowerCase();
             postid = (Integer)resultSet.getObject("id");
             topicid = (Integer)resultSet.getObject("topicid");
-            
-            System.out.printf("%d --- %s\n%s\n", postid, topicid, post);
-
+       
             titleWordsSet = buildTitleWordsSet(topicid);
             
             emphasizedsWordsSet = buildEmphasizedsWordsSet(post);
@@ -201,22 +226,39 @@ public final class Collect {
                 buildWordsRankMap(post, titleWordsSet, emphasizedsWordsSet);
             
             updateDatabases(postid, wordsRankMap);
- 
+  
         }//while
-        
+  
     }//processResultSet()
     
     /*[00]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
-    public static void main(String[] args) throws SQLException {
+    public int getWordsPerPostAverage() {
+        
+        return countRowsInDatabase / TOTAL_NUMBER_OF_POSTS;
+    }//getWordsPerPostAverage()
+    
+    /*[00]----------------------------------------------------------------------
+    
+    --------------------------------------------------------------------------*/
+    public static void main(String[] args) 
+        throws SQLException, FileNotFoundException {
         
         Collect collect = new Collect();
 
         for (int jump = 0; jump < TOTAL_NUMBER_OF_POSTS; jump += STEP) {
             
+            System.out.println(jump + " posts processados");
+            
             collect.processResultSet(collect.readPosts(jump));
-        }
+
+        }//for
+        
+        System.out.println(
+            "\n" + collect.getWordsPerPostAverage() + 
+            " diferentes palavras por post (média)"
+        );
         
     }//main()
     
