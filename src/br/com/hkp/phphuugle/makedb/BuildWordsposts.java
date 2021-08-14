@@ -1,10 +1,8 @@
 package br.com.hkp.phphuugle.makedb;
 
 import static br.com.hkp.phphuugle.makedb.Util.TOTAL_NUMBER_OF_POSTS;
-import static br.com.hkp.phphuugle.makedb.Util.WORD_REGEX;
-import static br.com.hkp.phphuugle.makedb.Util.getWordsExcludedsSet;
+import static br.com.hkp.phphuugle.makedb.Util.collectWords;
 import br.com.hkp.phphuugle.mysql.MySQL;
-import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.util.HashMap;
@@ -13,13 +11,25 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /******************************************************************************
- * Classe que coleta todas as palavras em posts.
+ * Classe que coleta todas as palavras em posts e popula a tabela wordsposts.
+ * 
+   CREATE TABLE `wordsposts` (
+      `wordid` mediumint unsigned NOT NULL,
+      `postid` int NOT NULL,
+      `ranking` smallint unsigned NOT NULL,
+      KEY `postid` (`postid`),
+      KEY `wordid` (`wordid`),
+      CONSTRAINT `wordsposts_ibfk_1` FOREIGN KEY (`postid`) 
+      REFERENCES `posts` (`id`),
+      CONSTRAINT `wordsposts_ibfk_2` FOREIGN KEY (`wordid`) 
+      REFERENCES `wordsindex` (`id`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin
  * 
  * @since 10 de agosto 2021 v1.0
  * @version 1.0
  * @author "Pedro Reis"
  ******************************************************************************/
-public final class Collect {
+public final class BuildWordsposts {
     
     private static final Pattern EMPHASIZED_WORD_REGEX =
         Pattern.compile(
@@ -33,26 +43,25 @@ public final class Collect {
     
     private final MySQL wordspostsUpdate;
     
-    private static final int STEP = 200;
+    private final MySQL wordsindexQuery;
     
-    private final HashSet<String> excludedsWordsSet;
+    private static final int STEP = 200;
     
     private int countRowsInDatabase;
     
     /*[00]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
-    public Collect() throws SQLException, FileNotFoundException {
+    public BuildWordsposts() throws SQLException {
         
         postsQuery = new MySQL("localhost", "root", "eratostenes", "cc");
         
         topicsQuery = new MySQL("localhost", "root", "eratostenes", "cc");
         
+        wordsindexQuery = new MySQL("localhost", "root", "eratostenes", "cc");
+        
         wordspostsUpdate = new MySQL("localhost", "root", "eratostenes", "cc");
-        
-        excludedsWordsSet = getWordsExcludedsSet();
-        
-        
+       
         countRowsInDatabase = 0;
 
     }//construtor
@@ -85,25 +94,17 @@ public final class Collect {
     --------------------------------------------------------------------------*/   
     private HashSet<String> buildTitleWordsSet(final int topicid) 
         throws SQLException {
+ 
+        ResultSet resultSet = readTopic(topicid);
         
-        HashSet<String> hashSet = new HashSet<>();
+        String title;
         
-        ResultSet result = readTopic(topicid);
-        
-        String title = null;
-        
-        if ((result != null) && (result.next()))
-            title = (String)result.getObject("title");
+        if ((resultSet != null) && (resultSet.next()))
+            title = (String)resultSet.getObject("title");
         else
-            throw new SQLException("Topicid not found");
-        
-        title = title.toLowerCase();
-        
-        Matcher matcher = WORD_REGEX.matcher(title);
-        
-        while (matcher.find()) hashSet.add(matcher.group());
-        
-        return hashSet;
+            throw new SQLException("Topic id not found");
+  
+        return collectWords(title);
         
     }//buildTitleWordsSet()
     
@@ -134,22 +135,15 @@ public final class Collect {
     {
         HashMap<String, Integer> hashMap = new HashMap<>();
         
-        String nonHtmlPost = post.replaceAll("<.+?>", "");
+        HashSet<String> wordsSet = collectWords(post);
+    
+        int rank; 
         
-        Matcher matcher = WORD_REGEX.matcher(nonHtmlPost);
-        
-        String word; int rank; 
-        
-        while (matcher.find()) {
-            
-            word = matcher.group(); 
-            
-            if (excludedsWordsSet.contains(word)) continue;
+        for (String word: wordsSet) {
             
             boolean wordPresentInTopicTitle = titleWordsSet.contains(word);
             
-            boolean wordEmphasized = emphasizedsWordsSet.contains(word);
-
+            boolean wordEmphasized = emphasizedsWordsSet.contains(word); 
             
             if (wordPresentInTopicTitle && wordEmphasized)
                 rank = 9;
@@ -160,10 +154,10 @@ public final class Collect {
    
             if (hashMap.containsKey(word)) rank += hashMap.get(word);
             
-            hashMap.put(word, rank);
+            hashMap.put(word, rank);            
             
-        }//while
-        
+        }//for
+         
         return hashMap;
         
     }//buildWordsRankMap()
@@ -171,7 +165,7 @@ public final class Collect {
     /*[00]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
-    private void updateDatabases(
+    private void updateDatabase(
         final int postid,
         final HashMap<String, Integer> wordsRankMap
     ) 
@@ -184,12 +178,24 @@ public final class Collect {
         countRowsInDatabase += numberOfWordsOnThisPost;
         
         String update = 
-            "INSERT INTO wordsposts (word, postid, ranking) VALUES";
+            "INSERT INTO wordsposts (wordid, postid, ranking) VALUES";
         
-        for (String key: wordsRankMap.keySet()) {
+        int wordId;
+        
+        for (String word: wordsRankMap.keySet()) {
             
-            update += "\n('" + key + "', '" + postid + "', '" + 
-                      wordsRankMap.get(key) + "'),";
+            ResultSet resultSet = 
+                wordsindexQuery.query(
+                    "SELECT id FROM wordsindex WHERE word = '" + word + "';"
+                );
+            
+            if ((resultSet != null) && (resultSet.next())) 
+                wordId = (Integer)resultSet.getObject("id");
+            else
+                throw new SQLException("Word id not found");
+            
+            update += "\n('" + wordId + "', '" + postid + "', '" + 
+                wordsRankMap.get(word) + "'),";
         }
         
         update = (update + "*").replace(",*", ";");
@@ -214,7 +220,7 @@ public final class Collect {
                
         while (resultSet.next()) {
             
-            post = ((String)resultSet.getObject("post")).toLowerCase();
+            post = (String)resultSet.getObject("post");
             postid = (Integer)resultSet.getObject("id");
             topicid = (Integer)resultSet.getObject("topicid");
        
@@ -225,7 +231,7 @@ public final class Collect {
             wordsRankMap = 
                 buildWordsRankMap(post, titleWordsSet, emphasizedsWordsSet);
             
-            updateDatabases(postid, wordsRankMap);
+            updateDatabase(postid, wordsRankMap);
   
         }//while
   
@@ -243,24 +249,24 @@ public final class Collect {
     
     --------------------------------------------------------------------------*/
     public static void main(String[] args) 
-        throws SQLException, FileNotFoundException {
+        throws SQLException {
         
-        Collect collect = new Collect();
+        BuildWordsposts buildWordsposts = new BuildWordsposts();
 
         for (int jump = 0; jump < TOTAL_NUMBER_OF_POSTS; jump += STEP) {
             
             System.out.println(jump + " posts processados");
             
-            collect.processResultSet(collect.readPosts(jump));
+            buildWordsposts.processResultSet(buildWordsposts.readPosts(jump));
 
         }//for
         
         System.out.println(
-            "\n" + collect.getWordsPerPostAverage() + 
+            "\n" + buildWordsposts.getWordsPerPostAverage() + 
             " diferentes palavras por post (média)"
         );
         
     }//main()
     
 
-}//classe Collect
+}//classe BuildWordsposts

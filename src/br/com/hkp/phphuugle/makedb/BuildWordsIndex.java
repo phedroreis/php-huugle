@@ -11,11 +11,19 @@ import java.sql.ResultSet;
  * Classe que coleta todas as diferentes palavras catalogadas nos  posts e cria 
  * uma tabela no banco de dados.
  * 
+ * CREATE TABLE `wordsindex` (
+      `id` mediumint unsigned NOT NULL AUTO_INCREMENT,
+      `word` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE KEY `word` (`word`)
+  ) ENGINE=InnoDB AUTO_INCREMENT=676358 DEFAULT CHARSET=utf8mb4 
+  COLLATE=utf8mb4_bin
+ * 
  * @since 12 de agosto 2021 v1.0
  * @version 1.0
  * @author "Pedro Reis"
  ******************************************************************************/
-public final class BuildWordsIndex {
+final class BuildWordsIndex {
        
     private final MySQL ccDatabase;
    
