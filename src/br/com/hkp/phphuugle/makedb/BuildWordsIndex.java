@@ -1,14 +1,11 @@
 package br.com.hkp.phphuugle.makedb;
 
 import static br.com.hkp.phphuugle.makedb.Util.TOTAL_NUMBER_OF_POSTS;
-import static br.com.hkp.phphuugle.makedb.Util.WORD_REGEX;
-import static br.com.hkp.phphuugle.makedb.Util.getWordsExcludedsSet;
+import static br.com.hkp.phphuugle.makedb.Util.collectWords;
 import br.com.hkp.phphuugle.mysql.MySQL;
-import java.io.FileNotFoundException;
 import java.util.HashSet;
 import java.sql.SQLException;
 import java.sql.ResultSet;
-import java.util.regex.Matcher;
 
 /******************************************************************************
  * Classe que coleta todas as diferentes palavras catalogadas nos  posts e cria 
@@ -18,27 +15,22 @@ import java.util.regex.Matcher;
  * @version 1.0
  * @author "Pedro Reis"
  ******************************************************************************/
-public final class CollectWords {
+public final class BuildWordsIndex {
        
-    private final MySQL postsQuery;
+    private final MySQL ccDatabase;
    
     private static final int STEP = 200;
     
     private final HashSet<String> wordsSet;
-    
-    private final HashSet<String> excludedsWordsSet;
-    
  
     /*[00]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
-    public CollectWords() throws SQLException, FileNotFoundException {
+    public BuildWordsIndex() throws SQLException {
         
-        postsQuery = new MySQL("localhost", "root", "eratostenes", "cc");
+        ccDatabase = new MySQL("localhost", "root", "eratostenes", "cc");
         
-        wordsSet = new HashSet<>(3000000);
-
-        excludedsWordsSet = getWordsExcludedsSet();
+        wordsSet = new HashSet<>(4500000);
 
     }//construtor
     
@@ -47,7 +39,7 @@ public final class CollectWords {
     --------------------------------------------------------------------------*/
     public ResultSet readPosts(final int start) throws SQLException {
         
-        return postsQuery.query(
+        return ccDatabase.query(
             "SELECT post FROM posts LIMIT " + start + ", " + STEP + ";"
         );
         
@@ -55,30 +47,45 @@ public final class CollectWords {
     
     /*[00]----------------------------------------------------------------------
     
-    --------------------------------------------------------------------------*/       
-    private void updateWordsSet(final String post) {
+    --------------------------------------------------------------------------*/    
+    public int getNumberOfWordsCollected() {
         
-        Matcher matcher = WORD_REGEX.matcher(post);
+        return wordsSet.size();
         
-        String word;
-        
-        while (matcher.find()) {
-            
-            word = matcher.group(); 
-            
-            if (excludedsWordsSet.contains(word)) continue;
-
-            wordsSet.add(word);
-            
-        }//while
-        
-        
-    }//buildWordsSet()
-
+    }//getNumberOfWordsCollected()
+ 
     /*[00]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/    
-    public void updateDatabase() {
+    private static final String INSERT_INTO_PREFIX = 
+        "INSERT INTO wordsindex (word) VALUES\n";
+    
+    public void updateDatabase() throws SQLException {
+        
+        int numberOfWordsCollected = getNumberOfWordsCollected();
+        int count = 0;
+        String update = INSERT_INTO_PREFIX;
+        
+        for (String word: wordsSet) {
+            
+           count++;
+           
+           boolean updateNow =
+               (((count % 150) == 0) || (count == numberOfWordsCollected));
+           
+           update += "('" + word + (updateNow ? "');" : "'),\n");
+           
+           if  (updateNow) {
+               
+               System.out.printf("\n%s\n--- %d ---", update, count);
+
+               ccDatabase.update(update);
+               
+               update = INSERT_INTO_PREFIX;
+               
+           }//if
+           
+        }//for
         
     }//updateDatabase()
     
@@ -92,38 +99,24 @@ public final class CollectWords {
               
         while (resultSet.next()) {
             
-            post = 
-                ((String)resultSet.getObject("post")).
-                    replaceAll("<.+?>", "").
-                    toLowerCase();
+            post = ((String)resultSet.getObject("post"));
             
-            updateWordsSet(post);
+            wordsSet.addAll(collectWords(post));
   
         }//while
   
     }//processResultSet()
-
-    /*[00]----------------------------------------------------------------------
-    
-    --------------------------------------------------------------------------*/    
-    public int getNumberOfWordsCollected() {
-        
-        return wordsSet.size();
-        
-    }//getNumberOfWordsCollected()
-        
-    
+   
     /*[00]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
-    public static void main(String[] args) 
-        throws SQLException, FileNotFoundException {
+    public static void main(String[] args) throws SQLException {
         
-        CollectWords collectWords = new CollectWords();
-
+        BuildWordsIndex buildWordsIndex = new BuildWordsIndex();
+   
         for (int jump = 0; jump < TOTAL_NUMBER_OF_POSTS; jump += STEP) {
                            
-            collectWords.processResultSet(collectWords.readPosts(jump));
+            buildWordsIndex.processResultSet(buildWordsIndex.readPosts(jump));
             
             int processed = jump + STEP;
             
@@ -131,16 +124,16 @@ public final class CollectWords {
                 
                 System.out.printf(
                     
-                    "%d palavras catalogadas em %d posts processados.\n",
-                    collectWords.getNumberOfWordsCollected(), processed 
+                    "%d palavras catalogadas em %d posts processados\n",
+                    buildWordsIndex.getNumberOfWordsCollected(), processed 
                 );
             }
 
         }//for
         
-        collectWords.updateDatabase();
+        buildWordsIndex.updateDatabase();
 
     }//main()
     
     
-}//classe CollectWords
+}//classe BuildWordsIndex
