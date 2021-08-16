@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="js/highlight/styles/stackoverflow-light.min.css">
+    <script src="js/highlight/highlight.min.js"></script>
+    <script src="js/highlight/highlightjs-line-numbers.min.js"></script>
+    <script>
+       hljs.highlightAll();
+       hljs.initLineNumbersOnLoad();
+    </script>
+
+    <style>
+        pre {
+            font-size: 15px;
+        }
+    </style>
+
+    <title>Document</title>
+</head>
+<body>
+    Java
+
+    <pre><code class="language-java">
+        package hkp.com.br.pacote;
+
+        import java.util.Scanner;
+
+        public class TestJava {
+
+            private int c;
+
+            public TestJava() {
+
+                //loop sem funcao
+                for (int t = 1; t == 100; t++) System.out.println("mensagem");
+
+                char k = 'k';
+
+            }
+
+            private static void fatorialFast(float final p) {
+                return p;
+            }
+        }
+    </code></pre>
+
+    Pascal
+
+    <pre><code class="language-pascal">
+        program HELLOW;
+
+        VAR
+           char : int;
+        BEGIN
+          FOR c := 1 TO 10 DO
+          BEGIN
+             writeln(c);
+             readln;
+             IF c = 19 then readln;
+          END;
+        END.  
+    </code></pre>
+
+    Bash
+
+    <pre><code class="language-bash">
+    # Esse script compila o projeto whatsappweb-fix e cria os JARs executáveis.
+    # 
+    # Autor: "Pedro Reis" 29 de novembro de 2020
+    #
+    #!/bin/bash  
+
+    echo "*****************************************************************************"
+    echo "* Para compilar esse projeto eh aconselhavel que voce tenha instalado  em   *"
+    echo "* seu sistema o OracleJDK14 ou posterior.                                   *"
+    echo "*                                                                           *"
+    echo "* Para isso desinstale o OpenJDK com o comando:                             *"
+    echo "*                                                                           *"
+    echo "* $ sudo apt-get remove --purge openjdk-*                                   *"
+    echo "*                                                                           *"
+    echo "* E instale o OracleJDK14 com:                                              *"
+    echo "*                                                                           *"
+    echo "* $ sudo add-apt-repository ppa:linuxuprising/java                          *"
+    echo "* $ sudo apt update                                                         *"
+    echo "* $ sudo aptinstall oracle-java14-installer                                 *"
+    echo "*                                                                           *"
+    echo "* Vai surgir uma tela com o contrato de licenca da Oracle no terminal.      *"
+    echo "* Role ate o fim e tecle ESC. Entao selecione <sim> para aceitar e a tecla  *"
+    echo "* ENTER. Pronto, o OracleJDK14 esta instalado em seu sistema.               *"
+    echo "*                                                                           *"
+    echo "* Se voce jah tem o OracleJDK tecle <ENTER> para continuar, caso contrario  *"
+    echo "* tecle <CTRL+C> para abortar.                                              *"
+    echo "*                                                                           *"
+    echo "*****************************************************************************" 
+
+    read n  
+
+    echo " COMPILANDO PROJETO..."
+    echo ""
+
+    javac br/com/hkp/whatsappwebfix/*.java
+    javac br/com/hkp/whatsappwebfix/apps/*.java
+    javac br/com/hkp/whatsappwebfix/global/*.java
+    javac br/com/hkp/whatsappwebfix/util/*.java
+    javac br/com/hkp/whatsappwebfix/gui/*.java
+
+    echo ""
+    echo " CONSTRUINDO ARQUIVO EXECUTAVEL JAR..."
+    echo ""
+
+    jar cfm Normalize.jar Normalize.txt br/com/hkp/whatsappwebfix/*.class br/com/hkp/whatsappwebfix/apps/*.class br/com/hkp/whatsappwebfix/global/*.class  br/com/hkp/whatsappwebfix/util/*.class br/com/hkp/whatsappwebfix/gui/*.class br/com/hkp/whatsappwebfix/util/*.class br/com/hkp/whatsappwebfix/gui/*.png
+
+    jar cfm Fix.jar Fix.txt br/com/hkp/whatsappwebfix/*.class br/com/hkp/whatsappwebfix/apps/*.class br/com/hkp/whatsappwebfix/global/*.class  br/com/hkp/whatsappwebfix/util/*.class br/com/hkp/whatsappwebfix/gui/*.class br/com/hkp/whatsappwebfix/util/*.class br/com/hkp/whatsappwebfix/gui/*.png
+
+    jar cfm FixGui.jar FixGui.txt br/com/hkp/whatsappwebfix/*.class br/com/hkp/whatsappwebfix/apps/*.class br/com/hkp/whatsappwebfix/global/*.class  br/com/hkp/whatsappwebfix/util/*.class br/com/hkp/whatsappwebfix/gui/*.class br/com/hkp/whatsappwebfix/util/*.class br/com/hkp/whatsappwebfix/gui/*.png
+    
+    jar cfm GetPngs.jar GetPngs.txt br/com/hkp/whatsappwebfix/*.class br/com/hkp/whatsappwebfix/apps/*.class br/com/hkp/whatsappwebfix/global/*.class br/com/hkp/whatsappwebfix/util/*.class br/com/hkp/whatsappwebfix/gui/*.class br/com/hkp/whatsappwebfix/util/*.class br/com/hkp/whatsappwebfix/gui/*.png
+
+    jar cfm Update.jar Update.txt br/com/hkp/whatsappwebfix/*.class br/com/hkp/whatsappwebfix/apps/*.class br/com/hkp/whatsappwebfix/global/*.class br/com/hkp/whatsappwebfix/util/*.class br/com/hkp/whatsappwebfix/gui/*.class br/com/hkp/whatsappwebfix/util/*.class br/com/hkp/whatsappwebfix/gui/*.png
+    echo ""
+    echo "------ ARQUIVOS JAR  CRIADOS --------"
+
+    </code></pre>
+    
+</body>
+</html>

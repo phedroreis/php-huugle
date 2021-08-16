@@ -47,8 +47,10 @@ public final class BuildWordsposts {
     
     private static final int STEP = 200;
     
-    private int countRowsInDatabase;
+    private int countRowsInPostsTable;
     
+    private int countRowsInWordspostsTable;
+        
     /*[00]----------------------------------------------------------------------
     
     --------------------------------------------------------------------------*/
@@ -61,8 +63,10 @@ public final class BuildWordsposts {
         wordsindexQuery = new MySQL("localhost", "root", "eratostenes", "cc");
         
         wordspostsUpdate = new MySQL("localhost", "root", "eratostenes", "cc");
+        
+        countRowsInPostsTable = 0;
        
-        countRowsInDatabase = 0;
+        countRowsInWordspostsTable = 0;
 
     }//construtor
     
@@ -175,7 +179,7 @@ public final class BuildWordsposts {
         
         if (numberOfWordsOnThisPost == 0) return;
         
-        countRowsInDatabase += numberOfWordsOnThisPost;
+        countRowsInWordspostsTable += numberOfWordsOnThisPost;
         
         String update = 
             "INSERT INTO wordsposts (wordid, postid, ranking) VALUES";
@@ -220,6 +224,8 @@ public final class BuildWordsposts {
                
         while (resultSet.next()) {
             
+            countRowsInPostsTable++;
+      
             post = (String)resultSet.getObject("post");
             postid = (Integer)resultSet.getObject("id");
             topicid = (Integer)resultSet.getObject("topicid");
@@ -234,6 +240,8 @@ public final class BuildWordsposts {
             updateDatabase(postid, wordsRankMap);
   
         }//while
+        
+        System.out.println(countRowsInPostsTable);
   
     }//processResultSet()
     
@@ -242,7 +250,7 @@ public final class BuildWordsposts {
     --------------------------------------------------------------------------*/
     public int getWordsPerPostAverage() {
         
-        return countRowsInDatabase / TOTAL_NUMBER_OF_POSTS;
+        return countRowsInWordspostsTable / TOTAL_NUMBER_OF_POSTS;
     }//getWordsPerPostAverage()
     
     /*[00]----------------------------------------------------------------------
@@ -254,8 +262,6 @@ public final class BuildWordsposts {
         BuildWordsposts buildWordsposts = new BuildWordsposts();
 
         for (int jump = 0; jump < TOTAL_NUMBER_OF_POSTS; jump += STEP) {
-            
-            System.out.println(jump + " posts processados");
             
             buildWordsposts.processResultSet(buildWordsposts.readPosts(jump));
 
